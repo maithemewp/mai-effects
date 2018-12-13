@@ -17,7 +17,7 @@ jQuery( document ).ready( function($) {
 	var rellax = new Rellax( '.parallax-image', {
 		relativeToWrapper: true,
 		center: true,
-		speed: -8,
+		speed: -6,
 	});
 
 	/**
