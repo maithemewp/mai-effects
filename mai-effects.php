@@ -132,11 +132,12 @@ final class Mai_Effects {
 	}
 
 	public function setup() {
-		add_action( 'plugins_loaded',     array( $this, 'updater' ) );
-		add_action( 'customize_register', array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'inline_style' ), 1000 ); // Way late cause Engine changes stylesheet to 999.
-		add_filter( 'mai_banner_args',    array( $this, 'banner_args' ) );
+		add_action( 'plugins_loaded',                     array( $this, 'updater' ) );
+		add_action( 'customize_register',                 array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
+		add_action( 'wp_enqueue_scripts',                 array( $this, 'enqueue' ) );
+		add_action( 'wp_enqueue_scripts',                 array( $this, 'inline_style' ), 1000 ); // Way late cause Engine changes stylesheet to 999.
+		add_filter( 'genesis_theme_settings_defaults',    array( $this, 'genesis_defaults' ));
+		add_filter( 'mai_banner_args',                    array( $this, 'banner_args' ) );
 		add_filter( 'genesis_markup_banner-area_content', array( $this, 'section' ), 10, 2 );
 		add_filter( 'genesis_markup_section_content',     array( $this, 'section' ), 10, 2 );
 	}
@@ -211,6 +212,11 @@ final class Mai_Effects {
 
 	function enqueue() {
 		wp_register_script( 'mai-effects', MAI_EFFECTS_PLUGIN_URL . 'assets/js/mai-effects.min.js', array(), MAI_EFFECTS_VERSION, true );
+	}
+
+	function genesis_defaults( $defaults ) {
+		$defaults['banner_effects'] = array();
+		return $defaults;
 	}
 
 	function banner_args( $args ) {
