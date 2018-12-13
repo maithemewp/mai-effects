@@ -210,11 +210,7 @@ final class Mai_Effects {
 	}
 
 	function enqueue() {
-		// if ( function_exists( 'mai_is_banner_area_enabled' ) && mai_is_banner_area_enabled() ) {
-		// 	$classes = genesis_get_option( 'banner_effects' );
-		// }
-		// wp_enqueue_style( 'mai-effects', MAI_EFFECTS_PLUGIN_URL . 'assets/css/mai-effects.css', array(), CHILD_THEME_VERSION );
-		wp_enqueue_script( 'mai-effects', MAI_EFFECTS_PLUGIN_URL . 'assets/js/mai-effects.min.js', array(), MAI_EFFECTS_VERSION, true );
+		wp_register_script( 'mai-effects', MAI_EFFECTS_PLUGIN_URL . 'assets/js/mai-effects.min.js', array(), MAI_EFFECTS_VERSION, true );
 	}
 
 	function banner_args( $args ) {
@@ -222,6 +218,7 @@ final class Mai_Effects {
 		if ( ! $effects ) {
 			return $args;
 		}
+		wp_enqueue_script( 'mai-effects' );
 		foreach ( $effects as $effect ) {
 			$args['class'] .= ' ' . sanitize_html_class( $effect );
 		}
@@ -243,6 +240,7 @@ final class Mai_Effects {
 		}
 		$image = wp_get_attachment_image( $args['params']['image'], $args['params']['image_size'], false, array( 'class' => 'parallax-image' ) );
 		if ( $image ) {
+			wp_enqueue_script( 'mai-effects' );
 			$content = $image . $content;
 		}
 		return $content;
