@@ -133,17 +133,23 @@ final class Mai_Effects {
 
 	public function setup() {
 		add_action( 'plugins_loaded',                     array( $this, 'updater' ) );
-		add_action( 'customize_register',                 array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
-		add_action( 'wp_enqueue_scripts',                 array( $this, 'enqueue' ) );
+		add_action( 'wp_enqueue_scripts',                 array( $this, 'register_scripts' ) );
 		add_action( 'wp_enqueue_scripts',                 array( $this, 'inline_style' ), 1000 ); // Way late cause Engine changes stylesheet to 999.
-		add_filter( 'genesis_theme_settings_defaults',    array( $this, 'genesis_defaults' ));
+		add_filter( 'genesis_theme_settings_defaults',    array( $this, 'genesis_defaults' ) );
+		add_filter( 'mai_valid_section_args',             array( $this, 'validate_args' ) );
 		add_filter( 'mai_banner_args',                    array( $this, 'banner_args' ) );
-		add_filter( 'genesis_markup_banner-area_content', array( $this, 'section' ), 10, 2 );
-		add_filter( 'genesis_markup_section_content',     array( $this, 'section' ), 10, 2 );
+		add_filter( 'shortcode_atts_section',             array( $this, 'section_atts' ), 10, 3 );
+		add_filter( 'mai_section_args',                   array( $this, 'section_args' ), 20, 2 );
+		add_filter( 'genesis_markup_banner-area_content', array( $this, 'section_content' ), 10, 2 );
+		add_filter( 'genesis_markup_section_content',     array( $this, 'section_content' ), 10, 2 );
+		add_action( 'customize_register',                 array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
+		add_action( 'cmb2_admin_init',                    array( $this, 'metabox_settings' ), 14 ); // Mai Theme settings are registered on default/10.
 	}
 
 	/**
 	 * Setup the updater.
+	 *
+	 * @since   0.1.0
 	 *
 	 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
 	 *
@@ -160,17 +166,194 @@ final class Mai_Effects {
 	}
 
 	/**
+	 * Get script suffix.
+	 *
+	 * @since   0.1.0
+	 *
+	 * @return  string
+	 */
+	function get_suffix() {
+		$debug  = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG;
+		return $debug ? '' : '.min';
+	}
+
+	/**
+	 * Register scripts.
+	 * Will be enqueued later, as needed.
+	 *
+	 * @since   0.1.0
+	 *
+	 * @return  void
+	 */
+	function register_scripts() {
+		wp_register_script( 'mai-effects', MAI_EFFECTS_PLUGIN_URL . "assets/js/mai-effects{$this->get_suffix()}.js", array(), MAI_EFFECTS_VERSION, true );
+	}
+
+	/**
+	 * Add inline CSS.
+	 *
+	 * @since   0.1.0
+	 *
+	 * @return  void
+	 */
+	function inline_style() {
+		$handle = ( defined( 'CHILD_THEME_NAME' ) && CHILD_THEME_NAME ) ? sanitize_title_with_dashes( CHILD_THEME_NAME ) : 'child-theme';
+		$css    = file_get_contents( MAI_EFFECTS_PLUGIN_DIR . "assets/css/mai-effects{$this->get_suffix()}.css" );
+		wp_add_inline_style( $handle, $css );
+	}
+
+	/**
+	 * Set default empty values for our new custom settings.
+	 *
+	 * @since   0.1.0
+	 *
+	 * @param   array  $defaults  The existing defaults.
+	 *
+	 * @return  array  The modified defaults.
+	 */
+	function genesis_defaults( $defaults ) {
+		$defaults['banner_effects']         = '';
+		$defaults['banner_content_effects'] = '';
+		return $defaults;
+	}
+
+	/**
+	 * Validate (whitelist) the args so they can be passed to our sections.
+	 * This is only important for Sections template in the current CMB2 structure.
+	 *
+	 * @since   0.1.0
+	 *
+	 * @param   array  $args  The existing args.
+	 *
+	 * @return  array  The modified args.
+	 */
+	function validate_args( $args ) {
+		$args[] = 'effects';
+		$args[] = 'content_effects';
+		return $args;
+	}
+
+	/**
+	 * Maybe add the banner effects to the args passed to the section helper.
+	 *
+	 * @since   0.1.0
+	 *
+	 * @param   array  $args  The existing args.
+	 *
+	 * @return  array  The modified args.
+	 */
+	function banner_args( $args ) {
+		$effects = array(
+			'effects'         => genesis_get_option( 'banner_effects' ),
+			'content_effects' => genesis_get_option( 'banner_content_effects' ),
+		);
+		foreach ( $effects as $key => $value ) {
+			if ( empty( $value ) ) {
+				continue;
+			}
+			$args[ $key ] = $value;
+		}
+		return $args;
+	}
+
+	/**
+	 * Allow our new section settings to get passed to the args/output of Mai_Section class.
+	 *
+	 * @since   0.1.0
+	 *
+	 * @param   array  $out    The output array of shortcode attributes.
+	 * @param   array  $pairs  The supported attributes and their defaults.
+	 * @param   array  $atts   The user defined shortcode attributes.
+	 *
+	 * @return  array  The modified output.
+	 */
+	function section_atts( $out, $pairs, $atts ) {
+		$settings = array( 'effects', 'content_effects' );
+		foreach ( $settings as $setting ) {
+			if ( isset( $atts[ $setting ] ) && ! empty( $atts[ $setting ] ) ) {
+				$out[ $setting ] = $atts[ $setting ];
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Add necessary classes to make effects work.
+	 * Enqueue the main script if it hasn't been yet.
+	 *
+	 * @since   0.1.0
+	 *
+	 * @param   array  $args           The existing section args.
+	 * @param   array  $original_args  The original args passed to the section.
+	 *
+	 * @return  array  The modified args.
+	 */
+	function section_args( $args, $original_args ) {
+		if ( ! function_exists( 'mai_add_classes' ) ) {
+			return $args;
+		}
+		// Cache.
+		static $has_effects = false;
+		static $enqueued    = false;
+		// Effects.
+		$effect         = ( isset( $args['effects'] ) && ! empty( $args['effects'] ) ) ? $args['effects']: false;
+		$content_effect = ( isset( $args['content_effects'] ) && ! empty( $args['content_effects'] ) ) ? $args['content_effects'] : false;
+		if ( $effect ) {
+			$has_effects = true;
+			$args['class'] = mai_add_classes( sanitize_html_class( $effect ), $args['class'] );
+		}
+		if ( $content_effect ) {
+			$has_effects = true;
+			$args['class'] = mai_add_classes( sanitize_html_class( $content_effect ), $args['class'] );
+		}
+		if ( $has_effects ) {
+			if ( ! $enqueued ) {
+				wp_enqueue_script( 'mai-effects' );
+				$enqueued = true;
+			}
+		}
+		return $args;
+	}
+
+	/**
+	 * Add the new inline image as the first element of the section content.
+	 * This is the structure needed for parallax to work.
+	 *
+	 * @since   0.1.0
+	 *
+	 * @param   string  $content  The existing section content.
+	 * @param   array   $args     The section args.
+	 *
+	 * @return  string|HTML
+	 */
+	function section_content( $content, $args ) {
+		if ( ! isset( $args['params']['effects'] ) || 'parallax' !== $args['params']['effects'] ) {
+			return $content;
+		}
+		if ( ! isset( $args['params']['image'] ) || empty( $args['params']['image'] ) ) {
+			return $content;
+		}
+		$image_size = ( isset( $args['params']['image_size'] ) && ! empty( $args['params']['image_size'] ) ) ? $args['params']['image_size']: 'section';
+		$image      = wp_get_attachment_image( $args['params']['image'], $image_size, false, array( 'class' => 'parallax-image' ) );
+		if ( $image ) {
+			$content = $image . $content;
+		}
+		return $content;
+	}
+
+	/**
 	 * Register new Customizer elements.
 	 *
+	 * @since   0.1.0
+	 *
 	 * @param   WP_Customize_Manager $wp_customize WP_Customize_Manager instance.
+	 *
+	 * @return  void
 	 */
 	function customizer_settings( $wp_customize ) {
 
+		// Bail if not running Mai Theme.
 		if ( ! class_exists( 'Mai_Theme_Engine' ) ) {
-			return;
-		}
-
-		if ( ! class_exists( 'Mai_Customize_Control_Multicheck' ) ) {
 			return;
 		}
 
@@ -181,167 +364,96 @@ final class Mai_Effects {
 		$section        = 'mai_banner_area';
 		$settings_field = 'genesis-settings';
 
-		// Banner Effects.
+		// Background Effects.
 		$wp_customize->add_setting(
 			_mai_customizer_get_field_name( $settings_field, 'banner_effects' ),
 			array(
 				'default'           => _mai_customizer_multicheck_sanitize_key( mai_get_default_option( 'banner_effects' ) ),
 				'type'              => 'option',
-				'sanitize_callback' => '_mai_customizer_multicheck_sanitize_key',
+				'sanitize_callback' => 'sanitize_key',
 			)
 		);
-		$wp_customize->add_control(
-			new Mai_Customize_Control_Multicheck( $wp_customize,
-				'banner_effects',
-				array(
-					'label'    => __( 'Banner Effects', 'mai-theme-engine' ),
-					'section'  => $section,
-					'settings' => _mai_customizer_get_field_name( $settings_field, 'banner_effects' ),
-					'priority' => 8,
-					'choices'  => array(
-						'parallax'    => __( 'Parallax', 'mai-theme-engine' ),
-						'fadeinup'    => __( 'Fade In/Up', 'mai-theme-engine' ),
-						'fadeindown'  => __( 'Fade In/Down', 'mai-theme-engine' ),
-						'fadeinleft'  => __( 'Fade In/Left', 'mai-theme-engine' ),
-						'fadeinright' => __( 'Fade In/Right', 'mai-theme-engine' ),
-					),
-				)
+		$wp_customize->add_control( _mai_customizer_get_field_name( $settings_field, 'banner_effects' ), array(
+			'label'    => __( 'Background Effects', 'mai-theme-engine' ),
+			'section'  => $section,
+			'type'     => 'select',
+			'priority' => 8,
+			'choices'  => array(
+				''         => __( '- None -', 'genesis' ),
+				'parallax' => __( 'Parallax', 'mai-theme-engine' ),
+			),
+		) );
+
+		// Content Effects.
+		$wp_customize->add_setting(
+			_mai_customizer_get_field_name( $settings_field, 'banner_content_effects' ),
+			array(
+				'default'           => _mai_customizer_multicheck_sanitize_key( mai_get_default_option( 'banner_content_effects' ) ),
+				'type'              => 'option',
+				'sanitize_callback' => 'sanitize_key',
 			)
 		);
-	}
-
-	function enqueue() {
-		wp_register_script( 'mai-effects', MAI_EFFECTS_PLUGIN_URL . 'assets/js/mai-effects.min.js', array(), MAI_EFFECTS_VERSION, true );
-	}
-
-	function genesis_defaults( $defaults ) {
-		$defaults['banner_effects'] = array();
-		return $defaults;
-	}
-
-	function banner_args( $args ) {
-		$effects = genesis_get_option( 'banner_effects' );
-		if ( ! $effects ) {
-			return $args;
-		}
-		wp_enqueue_script( 'mai-effects' );
-		foreach ( $effects as $effect ) {
-			$args['class'] .= ' ' . sanitize_html_class( $effect );
-		}
-		return $args;
-	}
-
-	function section( $content, $args ) {
-		if ( ! isset( $args['params']['class'] ) ) {
-			return $content;
-		}
-		if ( false  === strpos( $args['params']['class'], 'parallax' ) ) {
-			return $content;
-		}
-		if ( ! isset( $args['params']['image'] ) || empty( $args['params']['image'] ) ) {
-			return $content;
-		}
-		if ( ! isset( $args['params']['image_size'] ) || empty( $args['params']['image_size'] ) ) {
-			return $content;
-		}
-		$image = wp_get_attachment_image( $args['params']['image'], $args['params']['image_size'], false, array( 'class' => 'parallax-image' ) );
-		if ( $image ) {
-			wp_enqueue_script( 'mai-effects' );
-			$content = $image . $content;
-		}
-		return $content;
+		$wp_customize->add_control( _mai_customizer_get_field_name( $settings_field, 'banner_content_effects' ), array(
+			'label'    => __( 'Content Effects', 'mai-theme-engine' ),
+			'section'  => $section,
+			'type'     => 'select',
+			'priority' => 8,
+			'choices'  => array(
+				''            => __( '- None -', 'genesis' ),
+				'fadein'      => __( 'Fade In', 'mai-theme-engine' ),
+				'fadeinup'    => __( 'Fade In/Up', 'mai-theme-engine' ),
+				'fadeindown'  => __( 'Fade In/Down', 'mai-theme-engine' ),
+				'fadeinleft'  => __( 'Fade In/Left', 'mai-theme-engine' ),
+				'fadeinright' => __( 'Fade In/Right', 'mai-theme-engine' ),
+			),
+		) );
 	}
 
 	/**
-	 * Add inline CSS.
+	 * Register settings to the existing Sections template metabox.
 	 *
-	 * @since 0.3.0
+	 * @since   0.1.0
 	 *
-	 * @link  http://www.billerickson.net/code/enqueue-inline-styles/
-	 * @link  https://sridharkatakam.com/chevron-shaped-featured-parallax-section-in-genesis-using-clip-path/
+	 * @return  void
 	 */
-	function inline_style() {
-		$css = '
-			/* Parallax */
-			.section.parallax {
-				background-image: none !important;
-				position: relative;
-				overflow: hidden;
-			}
+	function metabox_settings() {
 
-			.section.parallax .parallax-image {
-				display: block;
-				min-width: 100%;
-				min-height: 100%;
-				margin: auto;
-				position: absolute;
-				top: 0;
-				right: 0;
-				bottom: 0;
-				left: 0;
-			}
+		// Get the sections metabox.
+		$sections = cmb2_get_metabox( 'mai_sections' );
 
-			/* Fade */
-			.js .fadeinup .section-content,
-			.js .fadeinleft .section-content,
-			.js .fadeinright .section-content {
-				opacity: 0;
-				overflow: hidden;
-				-webkit-animation-duration: 1s;
-				animation-duration: 1s;
-				-webkit-animation-fill-mode: both;
-				animation-fill-mode: both;
-				-webkit-animation-timing-function: ease-in-out;
-				animation-timing-function: ease-in-out;
-			}
+		// Bail if this metabox is not registered.
+		if ( ! $sections ) {
+			return;
+		}
 
-			.js .fadeInUp .section-content {
-				-webkit-animation-name: fadeInUp;
-				animation-name: fadeInUp;
-			}
-			.js .fadeInLeft .section-content {
-				-webkit-animation-name: fadeInLeft;
-				animation-name: fadeInLeft;
-			}
-			.js .fadeInRight .section-content {
-				-webkit-animation-name: fadeInRight;
-				animation-name: fadeInRight;
-			}
+		// Background Effects.
+		$sections->add_group_field( 'mai_sections', array(
+			'name'              => __( 'Background Effects', 'mai-theme-engine' ),
+			'id'                => 'effects',
+			'type'              => 'select',
+			'select_all_button' => false,
+			'options'           => array(
+				''         => __( '- None -', 'genesis' ),
+				'parallax' => __( 'Parallax', 'mai-theme-engine' ),
+			),
+		), 4 );
 
-			@-webkit-keyframes fadeInUp {
-				from { opacity: 0; -webkit-transform: translateY(24px); }
-				to { opacity: 1; -webkit-transform: translateY(0); }
-			}
-
-			@keyframes fadeInUp {
-				from { opacity: 0; -webkit-transform: translateY(24px); transform: translateY(24px); }
-				to { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
-			}
-
-			@-webkit-keyframes fadeInLeft {
-				from { opacity: 0; -webkit-transform: translateX(48px); }
-				to { opacity: 1; -webkit-transform: translateX(0); }
-			}
-
-			@keyframes fadeInLeft {
-				from { opacity: 0; -webkit-transform: translateX(48px); transform: translateX(48px); }
-				to { opacity: 1; -webkit-transform: translateX(0); transform: translateX(0); }
-			}
-
-			@-webkit-keyframes fadeInRight {
-				from { opacity: 0; -webkit-transform: translateX(-48px); }
-				to { opacity: 1; -webkit-transform: translateX(0); }
-			}
-
-			@keyframes fadeInRight {
-				from { opacity: 0; -webkit-transform: translateX(-48px); transform: translateX(-48px); }
-				to { opacity: 1; -webkit-transform: translateX(0); transform: translateX(0); }
-			}
-		';
-		$handle = ( defined( 'CHILD_THEME_NAME' ) && CHILD_THEME_NAME ) ? sanitize_title_with_dashes( CHILD_THEME_NAME ) : 'child-theme';
-		wp_add_inline_style( $handle, $css );
+		// Content Effects.
+		$sections->add_group_field( 'mai_sections', array(
+			'name'              => __( 'Content Effects', 'mai-theme-engine' ),
+			'id'                => 'content_effects',
+			'type'              => 'select',
+			'select_all_button' => false,
+			'options'           => array(
+				''            => __( '- None -', 'genesis' ),
+				'fadein'      => __( 'Fade In', 'mai-theme-engine' ),
+				'fadeinup'    => __( 'Fade In/Up', 'mai-theme-engine' ),
+				'fadeindown'  => __( 'Fade In/Down', 'mai-theme-engine' ),
+				'fadeinleft'  => __( 'Fade In/Left', 'mai-theme-engine' ),
+				'fadeinright' => __( 'Fade In/Right', 'mai-theme-engine' ),
+			),
+		), 5 );
 	}
-
 }
 
 /**

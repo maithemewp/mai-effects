@@ -14,31 +14,36 @@ jQuery( document ).ready( function($) {
 	/**
 	 * Parallax.
 	 */
-	var rellax = new Rellax( '.parallax-image', {
-		relativeToWrapper: true,
-		center: true,
-		speed: -6,
-	});
+	var $parallax = document.querySelector( '.parallax-image' );
+	if ( null !== $parallax ) {
+		var rellax = new Rellax( '.parallax-image', {
+			relativeToWrapper: true,
+			center: true,
+			speed: -6,
+		});
+	}
 
 	/**
 	 * Fade.
 	 */
-	var $inUp    = $( '.fadeinup' ),
-		$inLeft  = $( '.fadeinleft' ),
-		$inRight = $( '.fadeinright' );
+	var $elements = {
+		'fadeIn' : $( '.fadein' ),
+		'fadeInUp' : $( '.fadeinup' ),
+		'fadeInDown' : $( '.fadeindown' ),
+		'fadeInLeft' : $( '.fadeinleft' ),
+		'fadeInRight' : $( '.fadeinright' ),
+	};
 
-	$.each( $inUp, function() {
-		doAnimate( $inUp, 'fadeInUp' );
-	});
+	// Loop through possible elements.
+	for ( var key in $elements ) {
+		// Skip if we don't have any elements.
+		if ( ! $elements[key].length ) {
+			continue;
+		}
+		doAnimate( $elements[key], key );
+	}
 
-	$.each( $inLeft, function() {
-		doAnimate( $inLeft, 'fadeInLeft' );
-	});
-
-	$.each( $inRight, function() {
-		doAnimate( $inRight, 'fadeInRight' );
-	});
-
+	// Trigger the animation functions.
 	function doAnimate( object, fadeClass ) {
 
 		// Animate 0.25 seconds after document ready for any instances viewable on load.
