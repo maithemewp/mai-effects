@@ -46,7 +46,7 @@ final class Mai_Effects {
 			self::$instance = new Mai_Effects;
 			// Methods
 			self::$instance->setup_constants();
-			self::$instance->includes();
+			// self::$instance->includes();
 			self::$instance->setup();
 		}
 		return self::$instance;
@@ -131,19 +131,19 @@ final class Mai_Effects {
 		foreach ( glob( MAI_EFFECTS_INCLUDES_DIR . '*.php' ) as $file ) { include $file; }
 	}
 
+	/**
+	 * Setup the plugin.
+	 *
+	 * @since   0.1.0
+	 *
+	 * @return  void
+	 */
 	public function setup() {
-		add_action( 'plugins_loaded',                     array( $this, 'updater' ) );
-		add_action( 'wp_enqueue_scripts',                 array( $this, 'register_scripts' ) );
-		add_action( 'wp_enqueue_scripts',                 array( $this, 'inline_style' ), 1000 ); // Way late cause Engine changes stylesheet to 999.
-		add_filter( 'genesis_theme_settings_defaults',    array( $this, 'genesis_defaults' ) );
-		add_filter( 'mai_valid_section_args',             array( $this, 'validate_args' ) );
-		add_filter( 'mai_banner_args',                    array( $this, 'banner_args' ) );
-		add_filter( 'shortcode_atts_section',             array( $this, 'section_atts' ), 10, 3 );
-		add_filter( 'mai_section_args',                   array( $this, 'section_args' ), 20, 2 );
-		add_filter( 'genesis_markup_banner-area_content', array( $this, 'section_content' ), 10, 2 );
-		add_filter( 'genesis_markup_section_content',     array( $this, 'section_content' ), 10, 2 );
-		add_action( 'customize_register',                 array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
-		add_action( 'cmb2_admin_init',                    array( $this, 'metabox_settings' ), 14 ); // Mai Theme settings are registered on default/10.
+		add_action( 'plugins_loaded',     array( $this, 'updater' ) );
+		add_action( 'plugins_loaded',     array( $this, 'run' ) );
+		// These need to run early.
+		add_action( 'customize_register', array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
+		add_action( 'cmb2_admin_init',    array( $this, 'metabox_settings' ), 14 ); // Mai Theme settings are registered on default/10.
 	}
 
 	/**
@@ -163,6 +163,49 @@ final class Mai_Effects {
 			require_once MAI_EFFECTS_INCLUDES_DIR . 'vendor/plugin-update-checker/plugin-update-checker.php'; // 4.4
 		}
 		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-effects/', __FILE__, 'mai-effects' );
+	}
+
+	/**
+	 * Run the hooks if Mai Theme is active and the right version.
+	 *
+	 * @since   0.1.0
+	 *
+	 * @return  void
+	 */
+	public function run() {
+		add_action( 'wp_enqueue_scripts',                 array( $this, 'register_scripts' ) );
+		add_action( 'wp_enqueue_scripts',                 array( $this, 'inline_style' ), 1000 ); // Way late cause Engine changes stylesheet to 999.
+		add_filter( 'genesis_theme_settings_defaults',    array( $this, 'genesis_defaults' ) );
+		add_filter( 'mai_valid_section_args',             array( $this, 'validate_args' ) );
+		add_filter( 'mai_banner_args',                    array( $this, 'banner_args' ) );
+		add_filter( 'shortcode_atts_section',             array( $this, 'section_atts' ), 10, 3 );
+		add_filter( 'mai_section_args',                   array( $this, 'section_args' ), 20, 2 );
+		add_filter( 'genesis_markup_banner-area_content', array( $this, 'section_content' ), 10, 2 );
+		add_filter( 'genesis_markup_section_content',     array( $this, 'section_content' ), 10, 2 );
+	}
+
+	/**
+	 * Should we run our code?
+	 *
+	 * @since   0.1.0
+	 *
+	 * @return  bool
+	 */
+	function should_run() {
+		// If not running Mai Theme.
+		if ( ! class_exists( 'Mai_Theme_Engine' ) ) {
+			return false;
+		}
+		// If we don't know the version.
+		if ( ! defined( MAI_THEME_ENGINE_VERSION ) ) {
+			return false;
+		}
+		// If not running at least Mai Theme Engine 1.7.0.
+		if ( version_compare( MAI_THEME_ENGINE_VERSION, '1.7.0', '<' ) ) {
+			return false;
+		}
+		// Run!
+		return true;
 	}
 
 	/**
@@ -351,11 +394,6 @@ final class Mai_Effects {
 	 * @return  void
 	 */
 	function customizer_settings( $wp_customize ) {
-
-		// Bail if not running Mai Theme.
-		if ( ! class_exists( 'Mai_Theme_Engine' ) ) {
-			return;
-		}
 
 		/* *************** *
 		* Mai Banner Area *
