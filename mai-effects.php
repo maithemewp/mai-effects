@@ -99,9 +99,9 @@ final class Mai_Effects {
 		}
 
 		// Plugin Includes Path.
-		if ( ! defined( 'MAI_EFFECTS_INCLUDES_DIR' ) ) {
-			define( 'MAI_EFFECTS_INCLUDES_DIR', MAI_EFFECTS_PLUGIN_DIR . 'includes/' );
-		}
+		// if ( ! defined( 'MAI_EFFECTS_INCLUDES_DIR' ) ) {
+			// define( 'MAI_EFFECTS_INCLUDES_DIR', MAI_EFFECTS_PLUGIN_DIR . 'includes/' );
+		// }
 
 		// Plugin Folder URL.
 		if ( ! defined( 'MAI_EFFECTS_PLUGIN_URL' ) ) {
@@ -121,21 +121,24 @@ final class Mai_Effects {
 	}
 
 	/**
-	 * Include required files.
+	 * Include vendor libraries.
+	 *
+	 * composer require yahnis-elsts/plugin-update-checker
+	 *
+	 * v4.5  Plugin Update Checker
 	 *
 	 * @access  private
 	 * @since   1.0.0
 	 * @return  void
 	 */
 	private function includes() {
-		foreach ( glob( MAI_EFFECTS_INCLUDES_DIR . '*.php' ) as $file ) { include $file; }
+		require_once __DIR__ . '/vendor/autoload.php';
 	}
 
 	/**
 	 * Setup the plugin.
 	 *
 	 * @since   0.1.0
-	 *
 	 * @return  void
 	 */
 	public function setup() {
@@ -149,10 +152,10 @@ final class Mai_Effects {
 	/**
 	 * Setup the updater.
 	 *
+	 * composer require yahnis-elsts/plugin-update-checker
+	 *
 	 * @since   0.1.0
-	 *
 	 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
-	 *
 	 * @return  void
 	 */
 	public function updater() {
@@ -160,7 +163,7 @@ final class Mai_Effects {
 			return;
 		}
 		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
-			require_once MAI_EFFECTS_INCLUDES_DIR . 'vendor/plugin-update-checker/plugin-update-checker.php'; // 4.4
+			return;
 		}
 		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-effects/', __FILE__, 'mai-effects' );
 	}
