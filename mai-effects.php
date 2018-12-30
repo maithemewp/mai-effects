@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Effects
  * Plugin URI:      https://maitheme.com
  * Description:     Add various section effects to add a little flair to your Mai Theme powered website.
- * Version:         0.1.0
+ * Version:         0.2.0
  *
  * Author:          BizBudding, Mike Hemberger
  * Author URI:      https://bizbudding.com
@@ -46,7 +46,7 @@ final class Mai_Effects {
 			self::$instance = new Mai_Effects;
 			// Methods
 			self::$instance->setup_constants();
-			// self::$instance->includes();
+			self::$instance->includes();
 			self::$instance->setup();
 		}
 		return self::$instance;
@@ -90,12 +90,17 @@ final class Mai_Effects {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_EFFECTS_VERSION' ) ) {
-			define( 'MAI_EFFECTS_VERSION', '0.1.0' );
+			define( 'MAI_EFFECTS_VERSION', '0.2.0' );
 		}
 
 		// Plugin Folder Path.
 		if ( ! defined( 'MAI_EFFECTS_PLUGIN_DIR' ) ) {
 			define( 'MAI_EFFECTS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+		}
+
+		// Plugin Classes Path.
+		if ( ! defined( 'MAI_EFFECTS_CLASSES_DIR' ) ) {
+			define( 'MAI_EFFECTS_CLASSES_DIR', MAI_EFFECTS_PLUGIN_DIR . 'classes/' );
 		}
 
 		// Plugin Includes Path.
@@ -132,7 +137,13 @@ final class Mai_Effects {
 	 * @return  void
 	 */
 	private function includes() {
+		// Vendor.
 		require_once __DIR__ . '/vendor/autoload.php';
+		// Classes.
+		foreach ( glob( MAI_EFFECTS_CLASSES_DIR . '*.php' ) as $file ) { include_once $file; }
+		// Includes.
+		// foreach ( glob( MAI_EFFECTS_INCLUDES_DIR . '*.php' ) as $file ) { include_once $file; }
+
 	}
 
 	/**
