@@ -47,7 +47,7 @@ final class Mai_Effects {
 			// Methods
 			self::$instance->setup_constants();
 			self::$instance->includes();
-			self::$instance->setup();
+			self::$instance->run();
 		}
 		return self::$instance;
 	}
@@ -151,44 +151,24 @@ final class Mai_Effects {
 	 * @since   0.1.0
 	 * @return  void
 	 */
-	public function setup() {
-		add_action( 'plugins_loaded',     array( $this, 'updater' ) );
-		add_action( 'plugins_loaded',     array( $this, 'run' ), 20 );
-		// These need to run early.
-		add_action( 'customize_register', array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
-		add_action( 'cmb2_admin_init',    array( $this, 'metabox_settings' ), 14 ); // Mai Theme settings are registered on default/10.
-	}
-
-	/**
-	 * Setup the updater.
-	 *
-	 * composer require yahnis-elsts/plugin-update-checker
-	 *
-	 * @since   0.1.0
-	 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
-	 * @return  void
-	 */
-	public function updater() {
-		if ( ! is_admin() ) {
-			return;
-		}
-		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
-			return;
-		}
-		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-effects/', __FILE__, 'mai-effects' );
-	}
-
-	/**
-	 * Run the hooks if Mai Theme is active and the right version.
-	 *
-	 * @since   0.1.0
-	 *
-	 * @return  void
-	 */
 	public function run() {
+
+		// Updater.
+		add_action( 'plugins_loaded', array( $this, 'updater' ) );
+
+		// Notice.
 		if ( ! $this->should_run() ) {
+			add_action( 'admin_init', function() {
+				deactivate_plugins( plugin_basename( __FILE__ ) );
+			});
+			add_action( 'admin_notices', function() {
+				printf( '<div class="notice notice-warning"><p>%s</p></div>', __( 'Mai Effects requires Mai Theme Engine plugin v1.7.0 or higher. As a result, this plugin has been deactivated.', 'mai-styles' ) );
+			});
 			return;
 		}
+
+		add_action( 'customize_register',                 array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
+		add_action( 'cmb2_admin_init',                    array( $this, 'metabox_settings' ), 14 ); // Mai Theme settings are registered on default/10.
 		add_action( 'wp_enqueue_scripts',                 array( $this, 'register_scripts' ) );
 		add_action( 'wp_enqueue_scripts',                 array( $this, 'inline_style' ), 1000 ); // Way late cause Engine changes stylesheet to 999.
 		add_filter( 'genesis_theme_settings_defaults',    array( $this, 'genesis_defaults' ) );
@@ -209,7 +189,7 @@ final class Mai_Effects {
 	 */
 	function should_run() {
 		// If not running Mai Theme.
-		if ( ! class_exists( 'Mai_Theme_Engine' ) ) {
+		if ( ! is_plugin_active( 'mai-theme-engine/mai-theme-engine.php' ) ) {
 			return false;
 		}
 		// If we don't know the version.
@@ -222,6 +202,25 @@ final class Mai_Effects {
 		}
 		// Run!
 		return true;
+	}
+
+	/**
+	 * Setup the updater.
+	 *
+	 * composer require yahnis-elsts/plugin-update-checker
+	 *
+	 * @since   0.1.0
+	 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
+	 * @return  void
+	 */
+	public function updater() {
+		if ( ! is_admin() ) {
+			return;
+		}
+		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
+			return;
+		}
+		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-effects/', __FILE__, 'mai-effects' );
 	}
 
 	/**
