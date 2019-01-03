@@ -9,8 +9,9 @@ class Mai_Effects_Scroll_Logo {
 
 	function __construct() {
 		add_action( 'customize_register', array( $this, 'customizer_settings' ) );
-		add_filter( 'get_custom_logo',    array( $this, 'custom_logo' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'inline_styles' ), 1010 ); // After Mai Theme Engine inline styles.
+		add_filter( 'body_class',         array( $this, 'body_class' ) );
+		add_filter( 'get_custom_logo',    array( $this, 'custom_logo' ) );
 		// add_filter( 'kirki_mai_styles_styles', array( $this, 'kirki_styles' ) );
 	}
 
@@ -53,7 +54,7 @@ class Mai_Effects_Scroll_Logo {
 						'frame_button' => __( 'Choose logo', 'mai-styles' ),
 					),
 					'active_callback' => function() use ( $wp_customize ) {
-						return ( maistyles_has_scroll() && ! empty( $wp_customize->get_setting( 'custom_logo' )->value() ) );
+						return ( maieffects_has_scroll_header() && ! empty( $wp_customize->get_setting( 'custom_logo' )->value() ) );
 					},
 				)
 			)
@@ -77,31 +78,10 @@ class Mai_Effects_Scroll_Logo {
 				'placeholder' => '180',
 			),
 			'active_callback' => function() use ( $wp_customize ) {
-				return ( maistyles_has_scroll() && ! empty( $wp_customize->get_setting( 'custom_scroll_logo' )->value() ) );
+				return ( maieffects_has_scroll_header() && ! empty( $wp_customize->get_setting( 'custom_scroll_logo' )->value() ) );
 			},
 		));
 
-	}
-
-	/**
-	 * Display the scroll logo.
-	 *
-	 * @since   0.2.0
-	 *
-	 * @param   string  $html  The existing logo HTML.
-	 *
-	 * @return  string  The modified HTML.
-	 */
-	function custom_logo( $html ) {
-		$logo_id = get_theme_mod( 'custom_scroll_logo' );
-		if ( ! $logo_id ) {
-			return $html;
-		}
-		$image = wp_get_attachment_image( $logo_id, 'full', false, array( 'class' => 'custom-scroll-logo' ) );
-		if ( ! $image ) {
-			return $html;
-		}
-		return str_replace( '</a>', $image . '</a>', $html );
 	}
 
 	/**
@@ -131,6 +111,9 @@ class Mai_Effects_Scroll_Logo {
 			return;
 		}
 
+		$suffix = maieffects_get_suffix();
+		$css    = file_get_contents( MAI_EFFECTS_PLUGIN_DIR . "assets/css/mai-scroll-logo{$suffix}.css" );
+
 		// Scoll Logo dimensions.
 		$width = $image[1];
 		// $height = $image[2];
@@ -143,15 +126,22 @@ class Mai_Effects_Scroll_Logo {
 
 		$width_px  = absint( $width ) . 'px';
 		$shrink_px = absint( $width * .7 ) . 'px';
-		$css = "
+
+		/**
+		 * This CSS should follow the logo width code
+		 * in wp_add_inline_style();
+		 *
+		 * We have a check for reveal header here
+		 * because sticky header shouldn't do any scroll logo stuff on mobile.
+		 */
+		$css .= "
 			@media only screen and (max-width: 768px) {
-				.has-scroll-logo.scroll .custom-scroll-logo,
-				.has-scroll-logo.scroll .custom-logo-link {
+				.has-scroll-logo.has-reveal-header.scroll .custom-scroll-logo,
+				.has-scroll-logo.has-reveal-header.scroll .custom-logo-link {
 					max-width: {$shrink_px};
 				}
 			}
 			@media only screen and (min-width: 769px) {
-				.has-scroll-logo.scroll .custom-scroll-logo,
 				.has-scroll-logo.scroll .custom-logo-link {
 					max-width: {$width_px};
 				}
@@ -159,59 +149,50 @@ class Mai_Effects_Scroll_Logo {
 		";
 		if ( mai_has_shrink_header() ) {
 			$css .= "
-				.has-scroll-logo.scroll .custom-scroll-logo,
 				@media only screen and (min-width: 769px) {
+					.has-scroll-logo.scroll .custom-scroll-logo,
 					.has-scroll-logo.scroll .custom-logo-link {
 						max-width: {$shrink_px};
 					}
 				}
 			";
 		}
-		$handle = ( defined( 'CHILD_THEME_NAME' ) && CHILD_THEME_NAME ) ? sanitize_title_with_dashes( CHILD_THEME_NAME ) : 'child-theme';
-		wp_add_inline_style( $handle, $css );
+
+		wp_add_inline_style( maieffects_get_handle(), $css );
 	}
 
 	/**
-	 * Add custom CSSfor scroll logo functionality.
+	 * Add custom body class.
 	 *
-	 * Originally discovered a filter here https://github.com/aristath/kirki/issues/908
-	 * but it has sinced changed to what we're using here.
+	 * @param   array  The existing body classes.
+	 *
+	 * @return  array  Modified classes.
+	 */
+	function body_class( $classes ) {
+		if ( maieffects_has_scroll_logo() ) {
+			$classes[] = 'has-scroll-logo';
+		}
+		return $classes;
+	}
+
+	/**
+	 * Display the scroll logo.
 	 *
 	 * @since   0.2.0
 	 *
-	 * @uses    kirki/{$config_id}/styles
+	 * @param   string  $html  The existing logo HTML.
 	 *
-	 * @param   array  $css  The existing CSS config.
-	 * @return  array  $css  The modified CSS config.
+	 * @return  string  The modified HTML.
 	 */
-	function kirki_styles( $css ) {
-
-		return $css;
-
-		if ( ! maistyles_has_scroll_logo() ) {
-			return $css;
+	function custom_logo( $html ) {
+		if ( ! maieffects_has_scroll_logo() ) {
+			return $html;
 		}
-
-		$image = wp_get_attachment_image_src( $image_id, 'full' );
+		$image = wp_get_attachment_image( get_theme_mod( 'custom_scroll_logo' ), 'full', false, array( 'class' => 'custom-scroll-logo' ) );
 		if ( ! $image ) {
-			return $css;
+			return $html;
 		}
-
-		// Scoll Logo dimensions.
-		$width  = $image[1];
-		// $height = $image[2];
-
-		$scroll_width = get_theme_mod( 'custom_scroll_logo_width' );
-		if ( $scroll_width ) {
-			// $height = round( $scroll_width / ( $width / $height ), 0 ); // aspect ratio
-			$width  = $scroll_width;
-		}
-
-		// Image size on scroll.
-		$css['@media only screen and (min-width: 545px)']['body.scroll .custom-logo-link']['max-width'] = sprintf( '%spx', $width );
-		$css['@media only screen and (min-width: 545px)']['.custom-scroll-logo']['max-width'] = sprintf( '%spx', $width );
-
-		return $css;
+		return str_replace( '</a>', $image . '</a>', $html );
 	}
 
 }
