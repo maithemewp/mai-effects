@@ -187,7 +187,7 @@ final class Mai_Effects {
 	 *
 	 * @return  bool
 	 */
-	function should_run() {
+	public function should_run() {
 		// If not running Mai Theme.
 		if ( ! is_plugin_active( 'mai-theme-engine/mai-theme-engine.php' ) ) {
 			return false;
