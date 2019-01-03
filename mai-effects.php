@@ -104,9 +104,9 @@ final class Mai_Effects {
 		}
 
 		// Plugin Includes Path.
-		// if ( ! defined( 'MAI_EFFECTS_INCLUDES_DIR' ) ) {
-			// define( 'MAI_EFFECTS_INCLUDES_DIR', MAI_EFFECTS_PLUGIN_DIR . 'includes/' );
-		// }
+		if ( ! defined( 'MAI_EFFECTS_INCLUDES_DIR' ) ) {
+			define( 'MAI_EFFECTS_INCLUDES_DIR', MAI_EFFECTS_PLUGIN_DIR . 'includes/' );
+		}
 
 		// Plugin Folder URL.
 		if ( ! defined( 'MAI_EFFECTS_PLUGIN_URL' ) ) {
@@ -142,8 +142,7 @@ final class Mai_Effects {
 		// Classes.
 		foreach ( glob( MAI_EFFECTS_CLASSES_DIR . '*.php' ) as $file ) { include_once $file; }
 		// Includes.
-		// foreach ( glob( MAI_EFFECTS_INCLUDES_DIR . '*.php' ) as $file ) { include_once $file; }
-
+		foreach ( glob( MAI_EFFECTS_INCLUDES_DIR . '*.php' ) as $file ) { include_once $file; }
 	}
 
 	/**
@@ -154,7 +153,7 @@ final class Mai_Effects {
 	 */
 	public function setup() {
 		add_action( 'plugins_loaded',     array( $this, 'updater' ) );
-		add_action( 'plugins_loaded',     array( $this, 'run' ) );
+		add_action( 'plugins_loaded',     array( $this, 'run' ), 20 );
 		// These need to run early.
 		add_action( 'customize_register', array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
 		add_action( 'cmb2_admin_init',    array( $this, 'metabox_settings' ), 14 ); // Mai Theme settings are registered on default/10.
@@ -187,6 +186,9 @@ final class Mai_Effects {
 	 * @return  void
 	 */
 	public function run() {
+		if ( ! $this->should_run() ) {
+			return;
+		}
 		add_action( 'wp_enqueue_scripts',                 array( $this, 'register_scripts' ) );
 		add_action( 'wp_enqueue_scripts',                 array( $this, 'inline_style' ), 1000 ); // Way late cause Engine changes stylesheet to 999.
 		add_filter( 'genesis_theme_settings_defaults',    array( $this, 'genesis_defaults' ) );
@@ -211,7 +213,7 @@ final class Mai_Effects {
 			return false;
 		}
 		// If we don't know the version.
-		if ( ! defined( MAI_THEME_ENGINE_VERSION ) ) {
+		if ( ! defined( 'MAI_THEME_ENGINE_VERSION' ) ) {
 			return false;
 		}
 		// If not running at least Mai Theme Engine 1.7.0.
@@ -223,18 +225,6 @@ final class Mai_Effects {
 	}
 
 	/**
-	 * Get script suffix.
-	 *
-	 * @since   0.1.0
-	 *
-	 * @return  string
-	 */
-	function get_suffix() {
-		$debug  = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG;
-		return $debug ? '' : '.min';
-	}
-
-	/**
 	 * Register scripts.
 	 * Will be enqueued later, as needed.
 	 *
@@ -243,7 +233,8 @@ final class Mai_Effects {
 	 * @return  void
 	 */
 	function register_scripts() {
-		wp_register_script( 'mai-effects', MAI_EFFECTS_PLUGIN_URL . "assets/js/mai-effects{$this->get_suffix()}.js", array(), MAI_EFFECTS_VERSION, true );
+		$suffix = maieffects_get_suffix();
+		wp_register_script( 'mai-effects', MAI_EFFECTS_PLUGIN_URL . "assets/js/mai-effects{$suffix}.js", array(), MAI_EFFECTS_VERSION, true );
 	}
 
 	/**
@@ -254,9 +245,9 @@ final class Mai_Effects {
 	 * @return  void
 	 */
 	function inline_style() {
-		$handle = ( defined( 'CHILD_THEME_NAME' ) && CHILD_THEME_NAME ) ? sanitize_title_with_dashes( CHILD_THEME_NAME ) : 'child-theme';
-		$css    = file_get_contents( MAI_EFFECTS_PLUGIN_DIR . "assets/css/mai-effects{$this->get_suffix()}.css" );
-		wp_add_inline_style( $handle, $css );
+		$suffix = maieffects_get_suffix();
+		$css    = file_get_contents( MAI_EFFECTS_PLUGIN_DIR . "assets/css/mai-effects{$suffix}.css" );
+		wp_add_inline_style( maieffects_get_handle(), $css );
 	}
 
 	/**
@@ -346,9 +337,6 @@ final class Mai_Effects {
 	 * @return  array  The modified args.
 	 */
 	function section_args( $args, $original_args ) {
-		if ( ! function_exists( 'mai_add_classes' ) ) {
-			return $args;
-		}
 		// Cache.
 		static $has_effects = false;
 		static $enqueued    = false;
@@ -391,8 +379,17 @@ final class Mai_Effects {
 			return $content;
 		}
 		$image_size = ( isset( $args['params']['image_size'] ) && ! empty( $args['params']['image_size'] ) ) ? $args['params']['image_size']: 'section';
+		// $image_data = wp_get_attachment_image_src( $args['params']['image'], $image_size );
+		// $image      = wp_get_attachment_image( $args['params']['image'], $image_size, false, array( 'class' => 'parallax-image', 'data-rellax-percentage' => '0.5' ) );
+		// $image      = wp_get_attachment_image( $args['params']['image'], $image_size, false, array( 'class' => 'parallax-image' ) );
 		$image      = wp_get_attachment_image( $args['params']['image'], $image_size, false, array( 'class' => 'parallax-image' ) );
+		// if ( $image_data ) {
 		if ( $image ) {
+			// <div class="parallax" style="background-image: url('images/sea.jpg');" parallax></div>
+			// $image   = sprintf( '<div class="parallax" style="background-image:url(%s);" parallax></div>', $image_data[0] );
+			// $image   = sprintf( '<div class="parallax-image" style="background-image:url(%s);"></div>', $image_data[0] );
+			// $image   = sprintf( '<div class="parallax__image" data-parallax-image="%s"></div>', $image_data[0] );
+			// $image   = sprintf( '<div class="parallax-wrap">%s</div>', $image );
 			$content = $image . $content;
 		}
 		return $content;
