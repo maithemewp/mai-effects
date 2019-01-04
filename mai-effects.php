@@ -16,13 +16,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * Main Mai_Effects Class.
  *
- * @since 1.0.0
+ * @since 0.1.0
  */
 final class Mai_Effects {
 
 	/**
 	 * @var Mai_Effects The one true Mai_Effects
-	 * @since 1.0.0
+	 * @since 0.1.0
 	 */
 	private static $instance;
 
@@ -32,7 +32,7 @@ final class Mai_Effects {
 	 * Insures that only one instance of Mai_Effects exists in memory at any one
 	 * time. Also prevents needing to define globals all over the place.
 	 *
-	 * @since   1.0.0
+	 * @since   0.1.0
 	 * @static  var array $instance
 	 * @uses    Mai_Effects::setup_constants() Setup the constants needed.
 	 * @uses    Mai_Effects::includes() Include the required files.
@@ -58,7 +58,7 @@ final class Mai_Effects {
 	 * The whole idea of the singleton design pattern is that there is a single
 	 * object therefore, we don't want the object to be cloned.
 	 *
-	 * @since   1.0.0
+	 * @since   0.1.0
 	 * @access  protected
 	 * @return  void
 	 */
@@ -70,7 +70,7 @@ final class Mai_Effects {
 	/**
 	 * Disable unserializing of the class.
 	 *
-	 * @since   1.0.0
+	 * @since   0.1.0
 	 * @access  protected
 	 * @return  void
 	 */
@@ -83,7 +83,7 @@ final class Mai_Effects {
 	 * Setup plugin constants.
 	 *
 	 * @access  private
-	 * @since   1.0.0
+	 * @since   0.1.0
 	 * @return  void
 	 */
 	private function setup_constants() {
@@ -133,7 +133,7 @@ final class Mai_Effects {
 	 * v4.5  Plugin Update Checker
 	 *
 	 * @access  private
-	 * @since   1.0.0
+	 * @since   0.1.0
 	 * @return  void
 	 */
 	private function includes() {
@@ -156,17 +156,10 @@ final class Mai_Effects {
 		// Updater.
 		add_action( 'plugins_loaded', array( $this, 'updater' ) );
 
-		// Notice.
-		if ( ! $this->should_run() ) {
-			add_action( 'admin_init', function() {
-				deactivate_plugins( plugin_basename( __FILE__ ) );
-			});
-			add_action( 'admin_notices', function() {
-				printf( '<div class="notice notice-warning"><p>%s</p></div>', __( 'Mai Effects requires Mai Theme Engine plugin v1.7.0 or higher. As a result, this plugin has been deactivated.', 'mai-styles' ) );
-			});
-			return;
-		}
+		// Should run.
+		add_action( 'plugins_loaded', array( $this, 'should_run' ) );
 
+		// Hooks.
 		add_action( 'customize_register',                 array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
 		add_action( 'cmb2_admin_init',                    array( $this, 'metabox_settings' ), 14 ); // Mai Theme settings are registered on default/10.
 		add_action( 'wp_enqueue_scripts',                 array( $this, 'register_scripts' ) );
@@ -188,20 +181,25 @@ final class Mai_Effects {
 	 * @return  bool
 	 */
 	public function should_run() {
-		// If not running Mai Theme.
-		if ( ! is_plugin_active( 'mai-theme-engine/mai-theme-engine.php' ) ) {
-			return false;
+
+		// If we shouldn't run.
+		if ( is_plugin_active( 'mai-theme-engine/mai-theme-engine.php' ) // If running Mai Theme.
+			&& defined( 'MAI_THEME_ENGINE_VERSION' ) // If version is defined.
+			&& version_compare( MAI_THEME_ENGINE_VERSION, '1.7.0', '<' ) // If running Mai Theme Engine 1.7+.
+			) {
+
+			// We can run!
+			return;
 		}
-		// If we don't know the version.
-		if ( ! defined( 'MAI_THEME_ENGINE_VERSION' ) ) {
-			return false;
-		}
-		// If not running at least Mai Theme Engine 1.7.0.
-		if ( version_compare( MAI_THEME_ENGINE_VERSION, '1.7.0', '<' ) ) {
-			return false;
-		}
-		// Run!
-		return true;
+
+		// Deactivate.
+		add_action( 'admin_init', function() {
+			deactivate_plugins( plugin_basename( __FILE__ ) );
+		});
+		// Notice.
+		add_action( 'admin_notices', function() {
+			printf( '<div class="notice notice-warning"><p>%s</p></div>', __( 'Mai Effects requires Mai Theme Engine plugin v1.7.0 or higher. As a result, this plugin has been deactivated.', 'mai-styles' ) );
+		});
 	}
 
 	/**
@@ -381,7 +379,12 @@ final class Mai_Effects {
 		// $image_data = wp_get_attachment_image_src( $args['params']['image'], $image_size );
 		// $image      = wp_get_attachment_image( $args['params']['image'], $image_size, false, array( 'class' => 'parallax-image', 'data-rellax-percentage' => '0.5' ) );
 		// $image      = wp_get_attachment_image( $args['params']['image'], $image_size, false, array( 'class' => 'parallax-image' ) );
-		$image      = wp_get_attachment_image( $args['params']['image'], $image_size, false, array( 'class' => 'parallax-image' ) );
+		$image      = wp_get_attachment_image( $args['params']['image'], $image_size, false,
+			array(
+				'class' => 'parallax-image',
+				'data-rellax-speed' => '-4',
+			)
+		);
 		// if ( $image_data ) {
 		if ( $image ) {
 			// <div class="parallax" style="background-image: url('images/sea.jpg');" parallax></div>
@@ -515,7 +518,7 @@ final class Mai_Effects {
  *
  * Example: <?php $plugin = Mai_Effects(); ?>
  *
- * @since 1.0.0
+ * @since 0.1.0
  *
  * @return object|Mai_Effects The one true Mai_Effects Instance.
  */
@@ -523,5 +526,8 @@ function Mai_Effects() {
 	return Mai_Effects::instance();
 }
 
-// Get Mai_Effects Running.
-Mai_Effects();
+add_action( 'plugins_loaded', function() {
+
+	// Get Mai_Effects Running.
+	Mai_Effects();
+});
