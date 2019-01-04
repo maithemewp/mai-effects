@@ -185,7 +185,7 @@ final class Mai_Effects {
 		// If we shouldn't run.
 		if ( is_plugin_active( 'mai-theme-engine/mai-theme-engine.php' ) // If running Mai Theme.
 			&& defined( 'MAI_THEME_ENGINE_VERSION' ) // If version is defined.
-			&& version_compare( MAI_THEME_ENGINE_VERSION, '1.7.0', '<' ) // If running Mai Theme Engine 1.7+.
+			&& version_compare( MAI_THEME_ENGINE_VERSION, '1.8.0', '<' ) // If running Mai Theme Engine 1.7+.
 			) {
 
 			// We can run!
@@ -198,7 +198,7 @@ final class Mai_Effects {
 		});
 		// Notice.
 		add_action( 'admin_notices', function() {
-			printf( '<div class="notice notice-warning"><p>%s</p></div>', __( 'Mai Effects requires Mai Theme Engine plugin v1.7.0 or higher. As a result, this plugin has been deactivated.', 'mai-styles' ) );
+			printf( '<div class="notice notice-warning"><p>%s</p></div>', __( 'Mai Effects requires Mai Theme Engine plugin v1.8.0 or higher. As a result, this plugin has been deactivated.', 'mai-styles' ) );
 		});
 	}
 
