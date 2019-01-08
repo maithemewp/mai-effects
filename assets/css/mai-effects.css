@@ -1,3 +1,5 @@
+
+
 /* Parallax */
 .section.parallax {
 	background-image: none !important;
@@ -11,7 +13,7 @@
 	height: 140%; /* 100% + double transform percentage */
 	position: absolute;
 	top: 0;
-	bottom: 0;
+	bottom: -40%;
 	right: 0;
 	left: 0;
 	margin: auto;
@@ -19,9 +21,9 @@
 	object-fit: cover; /* no IE, whatever. */
 	z-index: 0;
 	will-change: transform;
-	-webkit-transform: translateY( calc( var(--viewport-y) * 20% ) );
-	-ms-transform: translateY( calc( var(--viewport-y) * 20% ) );
-	transform: translateY( calc( var(--viewport-y) * 20% ) );
+	-webkit-transform: translateY( 0% );
+	-ms-transform: translateY( 0% );
+	transform: translateY( 0% );
 }
 
 .section.parallax .section-content {
@@ -37,28 +39,28 @@
 	opacity: 0;
 }
 
-.js .section.fadein.animate .section-content {
+.js .section.fadein .section-content {
 	opacity: 1;
 	-webkit-animation: maiEffectsFadeIn 1s ease-in-out;
 	animation: maiEffectsFadeIn 1s ease-in-out;
 }
-.js .section.fadeinup.animate .section-content {
+.js .section.fadeinup:not(.enter) .section-content {
 	opacity: 1;
 	-webkit-animation: maiEffectsFadeInUp 1s ease-in-out;
 	animation: maiEffectsFadeInUp 1s ease-in-out;
 }
-.js .section.fadeindown.animate .section-content {
-	opacity: 1;
+.js .section.fadeindown .section-content {
+	/* opacity: 1; */
 	-webkit-animation: maiEffectsFadeInDown 1s ease-in-out;
 	animation: maiEffectsFadeInDown 1s ease-in-out;
 }
-.js .section.fadeinleft.animate .section-content {
-	opacity: 1;
+.js .section.fadeinleft .section-content {
+	/* opacity: 1; */
 	-webkit-animation: maiEffectsFadeInLeft 1s ease-in-out;
 	animation: maiEffectsFadeInLeft 1s ease-in-out;
 }
-.js .section.fadeinright.animate .section-content {
-	opacity: 1;
+.js .section.fadeinright .section-content {
+	/* opacity: 1; */
 	-webkit-animation: maiEffectsFadeInRight 1s ease-in-out;
 	animation: maiEffectsFadeInRight 1s ease-in-out;
 }

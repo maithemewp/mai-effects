@@ -382,7 +382,7 @@ final class Mai_Effects {
 		$image      = wp_get_attachment_image( $args['params']['image'], $image_size, false,
 			array(
 				'class' => 'parallax-image',
-				'data-rellax-speed' => '-4',
+				// 'data-rellax-speed' => '-4',
 			)
 		);
 		// if ( $image_data ) {
