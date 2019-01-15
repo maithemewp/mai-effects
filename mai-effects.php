@@ -140,7 +140,7 @@ final class Mai_Effects {
 		// Vendor.
 		require_once __DIR__ . '/vendor/autoload.php';
 		// Classes.
-		foreach ( glob( MAI_EFFECTS_CLASSES_DIR . '*.php' ) as $file ) { include_once $file; }
+		// foreach ( glob( MAI_EFFECTS_CLASSES_DIR . '*.php' ) as $file ) { include_once $file; }
 		// Includes.
 		foreach ( glob( MAI_EFFECTS_INCLUDES_DIR . '*.php' ) as $file ) { include_once $file; }
 	}
@@ -347,6 +347,7 @@ final class Mai_Effects {
 		if ( $content_effect ) {
 			$has_effects = true;
 			$args['class'] = mai_add_classes( sanitize_html_class( $content_effect ), $args['class'] );
+			$args['class'] = mai_add_classes( 'initial', $args['class'] );
 		}
 		if ( $has_effects ) {
 			if ( ! $enqueued ) {

@@ -1,5 +1,3 @@
-
-
 /* Parallax */
 .section.parallax {
 	background-image: none !important;
@@ -36,30 +34,30 @@
 .js .section.fadeindown .section-content,
 .js .section.fadeinleft .section-content,
 .js .section.fadeinright .section-content {
-	opacity: 0;
+	/* opacity: 0; */
 }
 
-.js .section.fadein .section-content {
-	opacity: 1;
+.js .section.fadein.initial .section-content {
+	/* opacity: 1; */
 	-webkit-animation: maiEffectsFadeIn 1s ease-in-out;
 	animation: maiEffectsFadeIn 1s ease-in-out;
 }
-.js .section.fadeinup:not(.enter) .section-content {
-	opacity: 1;
+.js .section.fadeinup.initial .section-content {
+	/* opacity: 1; */
 	-webkit-animation: maiEffectsFadeInUp 1s ease-in-out;
 	animation: maiEffectsFadeInUp 1s ease-in-out;
 }
-.js .section.fadeindown .section-content {
+.js .section.fadeindown.initial .section-content {
 	/* opacity: 1; */
 	-webkit-animation: maiEffectsFadeInDown 1s ease-in-out;
 	animation: maiEffectsFadeInDown 1s ease-in-out;
 }
-.js .section.fadeinleft .section-content {
+.js .section.fadeinleft.initial .section-content {
 	/* opacity: 1; */
 	-webkit-animation: maiEffectsFadeInLeft 1s ease-in-out;
 	animation: maiEffectsFadeInLeft 1s ease-in-out;
 }
-.js .section.fadeinright .section-content {
+.js .section.fadeinright.initial .section-content {
 	/* opacity: 1; */
 	-webkit-animation: maiEffectsFadeInRight 1s ease-in-out;
 	animation: maiEffectsFadeInRight 1s ease-in-out;

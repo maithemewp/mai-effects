@@ -81,6 +81,8 @@ class Mai_Effects_Scroll_Logo {
 		) );
 	}
 
+
+
 	/**
 	 * Add inline CSS.
 	 * Way late cause Engine changes stylesheet to 999.
@@ -121,8 +123,9 @@ class Mai_Effects_Scroll_Logo {
 			$width  = $scroll_width;
 		}
 
+
 		$width_px  = absint( $width ) . 'px';
-		$shrink_px = absint( $width * .7 ) . 'px';
+		// $shrink_px = absint( $width * .7 ) . 'px';
 
 		/**
 		 * This CSS should follow the logo width code
@@ -131,29 +134,37 @@ class Mai_Effects_Scroll_Logo {
 		 * We have a check for reveal header here
 		 * because sticky header shouldn't do any scroll logo stuff on mobile.
 		 */
-		$css .= "
-			@media only screen and (max-width: 768px) {
-				.has-scroll-logo.has-reveal-header.scroll .custom-scroll-logo,
-				.has-scroll-logo.has-reveal-header.scroll .custom-logo-link {
-					max-width: {$shrink_px};
-				}
-			}
-			@media only screen and (min-width: 769px) {
-				.has-scroll-logo.scroll .custom-logo-link {
-					max-width: {$width_px};
-				}
-			}
-		";
-		if ( mai_has_shrink_header() ) {
+		// $css .= "
+		// 	@media only screen and (max-width: 768px) {
+		// 		.has-scroll-logo.has-reveal-header.scroll .custom-scroll-logo,
+		// 		.has-scroll-logo.has-reveal-header.scroll .custom-logo-link {
+		// 			max-width: {$shrink_px};
+		// 		}
+		// 	}
+		// 	@media only screen and (min-width: 769px) {
+		// 		.has-scroll-logo.scroll .custom-logo-link {
+		// 			max-width: {$width_px};
+		// 		}
+		// 	}
+		// ";
+		// if ( mai_has_shrink_header() ) {
+			// $css .= "
+			// 	@media only screen and (min-width: 769px) {
+			// 		.has-scroll-logo.scroll .custom-scroll-logo,
+			// 		.has-scroll-logo.scroll .custom-logo-link {
+			// 			max-width: {$shrink_px};
+			// 		}
+			// 	}
+			// ";
 			$css .= "
 				@media only screen and (min-width: 769px) {
 					.has-scroll-logo.scroll .custom-scroll-logo,
 					.has-scroll-logo.scroll .custom-logo-link {
-						max-width: {$shrink_px};
+						max-width: {$width_px};
 					}
 				}
 			";
-		}
+		// }
 
 		wp_add_inline_style( maieffects_get_handle(), $css );
 	}
@@ -185,7 +196,8 @@ class Mai_Effects_Scroll_Logo {
 		if ( ! maieffects_has_scroll_logo() ) {
 			return $html;
 		}
-		$image = wp_get_attachment_image( get_theme_mod( 'custom_scroll_logo' ), 'full', false, array( 'class' => 'custom-scroll-logo' ) );
+		$image = wp_get_attachment_image( get_theme_mod( 'custom_scroll_logo' ), 'full', false, array( 'class' => 'custom-scroll-logo', 'style' => 'display:none;' ) );
+		// $image = wp_get_attachment_image( get_theme_mod( 'custom_scroll_logo' ), 'full', false, array( 'class' => 'custom-scroll-logo' ) );
 		if ( ! $image ) {
 			return $html;
 		}
@@ -195,3 +207,56 @@ class Mai_Effects_Scroll_Logo {
 }
 
 new Mai_Effects_Scroll_Logo();
+
+
+/**
+ * Pretty Printing
+ *
+ * @since   1.0.0
+ * @author  Chris Bratlien
+ *
+ * @param   mixed $obj
+ * @param   string $label
+ *
+ * @return  null
+ */
+function mai_pp( $obj, $label = '' ) {
+	$data = json_encode( print_r( $obj,true ) );
+	?>
+	<style type="text/css">
+		#maiLogger {
+			position: absolute;
+			top: 30px;
+			right: 0px;
+			border-left: 4px solid #bbb;
+			padding: 6px;
+			background: white;
+			color: #444;
+			z-index: 999;
+			font-size: 1.2rem;
+			width: 40vw;
+			height: calc( 100vh - 30px );
+			overflow: scroll;
+		}
+	</style>
+	<script type="text/javascript">
+		var doStuff = function() {
+			var obj    = <?php echo $data; ?>;
+			var logger = document.getElementById('maiLogger');
+			if ( ! logger ) {
+				logger = document.createElement('div');
+				logger.id = 'maiLogger';
+				document.body.appendChild(logger);
+			}
+			////console.log(obj);
+			var pre = document.createElement('pre');
+			var h2  = document.createElement('h2');
+			pre.innerHTML = obj;
+			h2.innerHTML  = '<?php echo addslashes($label); ?>';
+			logger.appendChild(h2);
+			logger.appendChild(pre);
+		};
+		window.addEventListener( "DOMContentLoaded", doStuff, false );
+	</script>
+	<?php
+}
