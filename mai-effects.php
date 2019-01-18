@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Effects
  * Plugin URI:      https://maitheme.com
  * Description:     Add various section effects to add a little flair to your Mai Theme powered website.
- * Version:         0.3.1
+ * Version:         0.4.0
  *
  * Author:          BizBudding, Mike Hemberger
  * Author URI:      https://bizbudding.com
@@ -90,7 +90,7 @@ final class Mai_Effects {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_EFFECTS_VERSION' ) ) {
-			define( 'MAI_EFFECTS_VERSION', '0.3.1' );
+			define( 'MAI_EFFECTS_VERSION', '0.4.0' );
 		}
 
 		// Plugin Folder Path.
@@ -140,7 +140,7 @@ final class Mai_Effects {
 		// Vendor.
 		require_once __DIR__ . '/vendor/autoload.php';
 		// Classes.
-		foreach ( glob( MAI_EFFECTS_CLASSES_DIR . '*.php' ) as $file ) { include_once $file; }
+		// foreach ( glob( MAI_EFFECTS_CLASSES_DIR . '*.php' ) as $file ) { include_once $file; }
 		// Includes.
 		foreach ( glob( MAI_EFFECTS_INCLUDES_DIR . '*.php' ) as $file ) { include_once $file; }
 	}
@@ -347,6 +347,7 @@ final class Mai_Effects {
 		if ( $content_effect ) {
 			$has_effects = true;
 			$args['class'] = mai_add_classes( sanitize_html_class( $content_effect ), $args['class'] );
+			$args['class'] = mai_add_classes( 'initial', $args['class'] );
 		}
 		if ( $has_effects ) {
 			if ( ! $enqueued ) {
@@ -382,7 +383,7 @@ final class Mai_Effects {
 		$image      = wp_get_attachment_image( $args['params']['image'], $image_size, false,
 			array(
 				'class' => 'parallax-image',
-				'data-rellax-speed' => '-4',
+				// 'data-rellax-speed' => '-4',
 			)
 		);
 		// if ( $image_data ) {

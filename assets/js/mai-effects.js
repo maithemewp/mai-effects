@@ -1,60 +1,198 @@
-/**
- * ScrollOut.
- * @link https://scroll-out.github.io/
- */
-var ScrollOut=function(){"use strict"
-function S(e,t,n){return e<t?t:n<e?n:e}function w(e){return+(0<e)-+(e<0)}var t={}
-function A(e){return t[e]||(t[e]=e.replace(/([A-Z])/g,n))}function n(e){return"-"+e[0].toLowerCase()}var D=window,E=document.documentElement
-function L(e,t){return e&&0!==e.length?e.nodeName?[e]:[].slice.call(e[0].nodeName?e:(t||E).querySelectorAll(e)):[]}var P,b=function(e,t){for(var n in t)e.setAttribute("data-"+A(n),t[n])},H=[]
-function O(){H.slice().forEach(function(e){return e()}),P=H.length?requestAnimationFrame(O):0}function x(){}var y="scroll",W="resize",_="addEventListener",N="removeEventListener",T=0
-return function(h){var o,c,l,i,p,g,t,s=(h=h||{}).onChange||x,f=h.onHidden||x,u=h.onShown||x,a=h.cssProps?(o=h.cssProps,function(e,t){for(var n in t)(!0===o||o[n])&&e.style.setProperty("--"+A(n),(r=t[n],Math.round(1e4*r)/1e4))
-var r}):x,e=h.scrollingElement,m=e?L(e)[0]:D,X=e?L(e)[0]:E,r=++T,v=function(e,t,n){return e[t+r]!==(e[t+r]=JSON.stringify(n))},n=function(){i=!0},d=function(){i&&(i=!1,l=L(h.targets||"[data-scroll]",L(h.scope||X)[0]).map(function(e){return{$:e,ctx:{}}}))
-var v=X.clientWidth,d=X.clientHeight,e=w(-p+(p=X.scrollLeft||D.pageXOffset)),t=w(-g+(g=X.scrollTop||D.pageYOffset)),n=X.scrollLeft/(X.scrollWidth-v||1),r=X.scrollTop/(X.scrollHeight-d||1)
-c={scrollDirX:e,scrollDirY:t,scrollPercentX:n,scrollPercentY:r},l.forEach(function(e){for(var t=e.$,n=t,r=0,o=0;r+=n.offsetLeft,o+=n.offsetTop,(n=n.offsetParent)&&n!==m;);var i=t.clientWidth,c=t.clientHeight,l=(S(r+i,p,p+v)-S(r,p,p+v))/i,s=(S(o+c,g,g+d)-S(o,g,g+d))/c,f=S((p-(i/2+r-v/2))/(v/2),-1,1),u=S((g-(c/2+o-d/2))/(d/2),-1,1),a=+(h.offset?h.offset<=g:(h.threshold||0)<l*s)
-e.ctx={elementHeight:c,elementWidth:i,intersectX:1===l?0:w(r-p),intersectY:1===s?0:w(o-g),offsetX:r,offsetY:o,viewportX:f,viewportY:u,visible:a,visibleX:l,visibleY:s}})},Y=(t=function(){if(l){var e={scrollDirX:c.scrollDirX,scrollDirY:c.scrollDirY}
-v(X,"_SA",e)&&b(X,e),v(X,"_S",c)&&a(X,c)
-for(var t=l.length-1;-1<t;t--){var n=l[t],r=n.$,o=n.ctx,i=o.visible
-v(r,"_SO",o)&&a(r,o),v(r,"_SV",i)&&(b(r,{scroll:i?"in":"out"}),s(r,o,X),(i?u:f)(r,o,X)),i&&h.once&&l.splice(t,1)}}},H.push(t),P||O(),function(){!(H=H.filter(function(e){return e!==t})).length&&P&&(P=0,cancelAnimationFrame(P))})
-return n(),d(),D[_](W,n),m[_](y,d),{index:n,teardown:function(){Y(),D[N](W,n),m[N](y,d)},update:d}}}();
+( function( document, $, undefined ) {
 
-/**
- * Parallax.
- */
-ScrollOut({
-	targets: '.section.parallax .parallax-image',
-	cssProps: {
-		viewportY: true,
-	},
-});
-
-/**
- * Fade/move animations.
- */
-ScrollOut({
-	targets: [
-		'.section.fadein',
-		'.section.fadeinup',
-		'.section.fadeindown',
-		'.section.fadeinleft',
-		'.section.fadeinright'
-	],
-	onShown: function(el, ctx, doc) {
-		// If scrolling up into view.
-		if ( 1 === ctx.intersectY ) {
-			el.classList.add( 'animate' );
-		}
-	},
-	onHidden: function(el, ctx, doc) {
-		// If scrolling down out of view.
-		if ( 1 === ctx.intersectY ) {
-			el.classList.remove( 'animate' );
-		}
-	},
-	onChange: function(el, ctx, doc) {
-		// If in view, or already scrolled passed, mostly when loading the page.
-		var views = ["-1","0"];
-		if ( views.indexOf( ctx.intersectY ) ) {
-			el.classList.add( 'animate' );
-		}
+	// Bail if ScrollMagic isn't loaded somehow.
+	if ( 'function' !== typeof ScrollMagic ) {
+		return;
 	}
-});
+
+	var $window = $(window);
+
+	// Setup ScrollMagic Controller.
+	var controller = new ScrollMagic.Controller();
+
+	// Parallax.
+	$( '.section.parallax' ).each( function(e){
+
+		var $section = $(this);
+		var $image   = $section.find( '.parallax-image' );
+
+		// Parallax.
+		var parallaxScene = new ScrollMagic.Scene({
+			triggerElement: $section[0],
+			triggerHook: 'onEnter',
+			duration: getDuration(),
+		})
+		.on( 'progress', function(e) {
+			var distance = '-' + e.progress * 20 + '%';
+			// jQuery 1.8+ handles browser prefixes.
+			$image.css( 'transform', 'translateY(' + distance + ')' );
+		})
+		// .addIndicators()
+		.addTo(controller);
+
+		// Get the duration. Full window height plus the section height.
+		function getDuration() {
+			return $window.height() + $section.height();
+		}
+		// Update duration if browser on resize or similar shift.
+		parallaxScene.on( 'shift', function(e) {
+			parallaxScene.duration( getDuration() );
+		});
+	});
+
+	var fades = [];
+
+	// Fade In.
+	$( '.section.fadein' ).each( function(e){
+
+		var $section = $(this);
+		var $content = $section.find( '.section-content' );
+
+		var fadeInScene = new ScrollMagic.Scene({
+			triggerElement: $section[0],
+			triggerHook: .8, // 20% up the page.
+			duration: '30%',
+		})
+		.on( 'progress', function(e) {
+			$content.css({
+				'opacity': e.progress,
+			});
+		})
+		.on( 'enter', function(e) {
+			$content.addClass( 'enter' );
+		})
+		.on( 'end', function(e) {
+			$content.addClass( 'end' );
+		})
+		// .addIndicators()
+		.addTo(controller);
+
+		// Add to our fades array.
+		fades.push(fadeInScene);
+	});
+
+	// Fade In Up.
+	$( '.section.fadeinup' ).each( function(e){
+
+		var $section = $(this);
+		var $content = $section.find( '.section-content' );
+
+		var fadeInUpScene = new ScrollMagic.Scene({
+			triggerElement: $section[0],
+			triggerHook: .8, // 20% up the page.
+			duration: '30%',
+		})
+		.on( 'progress', function(e) {
+			var transform = ( 48 - ( e.progress * 48 ) ) + 'px';
+			$content.css({
+				'opacity': e.progress,
+				'transform': 'translateY(' + transform + ')',
+			});
+		})
+		// .addIndicators()
+		.addTo(controller);
+
+		// Add to our fades array.
+		fades.push(fadeInUpScene);
+	});
+
+	// Fade In Down.
+	$( '.section.fadeindown' ).each( function(e){
+
+		var $section = $(this);
+		var $content = $section.find( '.section-content' );
+
+		var fadeInDownScene = new ScrollMagic.Scene({
+			triggerElement: $section[0],
+			triggerHook: .8, // 20% up the page.
+			duration: '30%',
+		})
+		.on( 'progress', function(e) {
+			var transform = ( 48 - ( e.progress * 48 ) ) + 'px';
+			$content.css({
+				'opacity': e.progress,
+				'transform': 'translateY(-' + transform + ')',
+			});
+		})
+		// .addIndicators()
+		.addTo(controller);
+
+		// Add to our fades array.
+		fades.push(fadeInDownScene);
+	});
+
+	// Fade In Left.
+	$( '.section.fadeinleft' ).each( function(e){
+
+		var $section = $(this);
+		var $content = $section.find( '.section-content' );
+
+		var fadeInLeftScene = new ScrollMagic.Scene({
+			triggerElement: $section[0],
+			triggerHook: .8, // 20% up the page.
+			duration: '30%',
+		})
+		.on( 'progress', function(e) {
+			var transform = ( 48 - ( e.progress * 48 ) ) + 'px';
+			$content.css({
+				'opacity': e.progress,
+				'transform': 'translateX(' + transform + ')',
+			});
+		})
+		// .addIndicators()
+		.addTo(controller);
+
+		// Add to our fades array.
+		fades.push(fadeInLeftScene);
+	});
+
+	// Fade In Right.
+	$( '.section.fadeinright' ).each( function(e){
+
+		var $section = $(this);
+		var $content = $section.find( '.section-content' );
+
+		var fadeInRightScene = new ScrollMagic.Scene({
+			triggerElement: $section[0],
+			triggerHook: .8, // 20% up the page.
+			duration: '30%',
+		})
+		.on( 'progress', function(e) {
+			var transform = ( 48 - ( e.progress * 48 ) ) + 'px';
+			$content.css({
+				'opacity': e.progress,
+				'transform': 'translateX(-' + transform + ')',
+			});
+		})
+		// .addIndicators()
+		.addTo(controller);
+
+		// Add to our fades array.
+		fades.push(fadeInRightScene);
+	});
+
+	// Loop through all of our fades.
+	for ( var i = 0; i < fades.length; i++ ) {
+		/**
+		 * Determine whether any of the fade sections are
+		 * more than 50% down the page (triggerHook is 20% and duration is 30%).
+		 * If so, remove the intial class which handles our keyframe fade.
+		 * This allows ScrollMagic to do the fade tied to scroll position.
+		 */
+		var $section     = $( fades[i].triggerElement() );
+		var windowHeight = $window.height();
+		var offset       = $section.offset().top;
+		var top          = offset - $(document).scrollTop();
+		var percent      = Math.floor( top / windowHeight * 100 );
+		var midFade      = ( percent >= 50 );
+
+		// Skip if not midFade.
+		if ( ! midFade ) {
+			continue;
+		}
+
+		// Remove the initial class.
+		$section.removeClass( 'initial' );
+	}
+
+})( document, jQuery );
