@@ -18,7 +18,7 @@
 
 		// Parallax.
 		var parallaxScene = new ScrollMagic.Scene({
-			triggerElement: $section,
+			triggerElement: $section[0],
 			triggerHook: 'onEnter',
 			duration: getDuration(),
 		})
@@ -30,19 +30,17 @@
 		// .addIndicators()
 		.addTo(controller);
 
+		// Get the duration. Full window height plus the section height.
 		function getDuration() {
 			return $window.height() + $section.height();
 		}
-		function updateDuration() {
-			parallaxScene.offset( getDuration() );
-		}
-
 		// Update duration if browser on resize or similar shift.
 		parallaxScene.on( 'shift', function(e) {
-			updateDuration();
+			parallaxScene.duration( getDuration() );
 		});
-
 	});
+
+	var fades = [];
 
 	// Fade In.
 	$( '.section.fadein' ).each( function(e){
@@ -69,6 +67,8 @@
 		// .addIndicators()
 		.addTo(controller);
 
+		// Add to our fades array.
+		fades.push(fadeInScene);
 	});
 
 	// Fade In Up.
@@ -92,12 +92,8 @@
 		// .addIndicators()
 		.addTo(controller);
 
-		fadeInUpScene.on( 'start', function(e) {
-			if ( fadeInUpScene.progress() < 1 ) {
-				$section.removeClass( 'initial' );
-			}
-		});
-
+		// Add to our fades array.
+		fades.push(fadeInUpScene);
 	});
 
 	// Fade In Down.
@@ -121,6 +117,8 @@
 		// .addIndicators()
 		.addTo(controller);
 
+		// Add to our fades array.
+		fades.push(fadeInDownScene);
 	});
 
 	// Fade In Left.
@@ -144,6 +142,8 @@
 		// .addIndicators()
 		.addTo(controller);
 
+		// Add to our fades array.
+		fades.push(fadeInLeftScene);
 	});
 
 	// Fade In Right.
@@ -167,12 +167,32 @@
 		// .addIndicators()
 		.addTo(controller);
 
-		// fadeInRightScene.setClassToggle( $section[0], 'inview' );
-
-		// fadeInRightScene.on( 'start', function(e) {
-			// console.log( fadeInRightScene.progress() );
-		// })
+		// Add to our fades array.
+		fades.push(fadeInRightScene);
 	});
 
+	// Loop through all of our fades.
+	for ( var i = 0; i < fades.length; i++ ) {
+		/**
+		 * Determine whether any of the fade sections are
+		 * more than 50% down the page (triggerHook is 20% and duration is 30%).
+		 * If so, remove the intial class which handles our keyframe fade.
+		 * This allows ScrollMagic to do the fade tied to scroll position.
+		 */
+		var $section     = $( fades[i].triggerElement() );
+		var windowHeight = $window.height();
+		var offset       = $section.offset().top;
+		var top          = offset - $(document).scrollTop();
+		var percent      = Math.floor( top / windowHeight * 100 );
+		var midFade      = ( percent >= 50 );
+
+		// Skip if not midFade.
+		if ( ! midFade ) {
+			continue;
+		}
+
+		// Remove the initial class.
+		$section.removeClass( 'initial' );
+	}
 
 })( document, jQuery );
