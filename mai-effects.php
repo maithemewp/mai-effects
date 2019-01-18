@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Effects
  * Plugin URI:      https://maitheme.com
  * Description:     Add various section effects to add a little flair to your Mai Theme powered website.
- * Version:         0.3.1
+ * Version:         0.4.0
  *
  * Author:          BizBudding, Mike Hemberger
  * Author URI:      https://bizbudding.com
@@ -90,7 +90,7 @@ final class Mai_Effects {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_EFFECTS_VERSION' ) ) {
-			define( 'MAI_EFFECTS_VERSION', '0.3.1' );
+			define( 'MAI_EFFECTS_VERSION', '0.4.0' );
 		}
 
 		// Plugin Folder Path.
