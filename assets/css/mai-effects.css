@@ -8,10 +8,10 @@
 .section.parallax .parallax-image {
 	display: block;
 	min-width: 100%;
-	height: 140%; /* 100% + double transform percentage */
+	height: 130%; /* 100% + transform percentage */
 	position: absolute;
-	top: 0;
-	bottom: -40%;
+	top: -30%;
+	bottom: 0%;
 	right: 0;
 	left: 0;
 	margin: auto;

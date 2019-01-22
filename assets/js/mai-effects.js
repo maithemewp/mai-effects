@@ -23,7 +23,8 @@
 			duration: getDuration(),
 		})
 		.on( 'progress', function(e) {
-			var distance = '-' + e.progress * 20 + '%';
+			// var distance = '-' + e.progress * 20 + '%';
+			var distance = e.progress * 30 + '%';
 			// jQuery 1.8+ handles browser prefixes.
 			$image.css( 'transform', 'translateY(' + distance + ')' );
 		})
