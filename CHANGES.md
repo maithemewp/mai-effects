@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 0.6.0 (1/23/19)
+* Fix updater.
+
 ## 0.5.0 (1/23/19)
 * Better compatibility with Mai Theme Engine v1.8.0-beta.16
 
