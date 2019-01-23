@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Effects
  * Plugin URI:      https://maitheme.com
  * Description:     Add various section effects to add a little flair to your Mai Theme powered website.
- * Version:         0.4.0
+ * Version:         0.5.0
  *
  * Author:          BizBudding, Mike Hemberger
  * Author URI:      https://bizbudding.com
@@ -90,7 +90,7 @@ final class Mai_Effects {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_EFFECTS_VERSION' ) ) {
-			define( 'MAI_EFFECTS_VERSION', '0.4.0' );
+			define( 'MAI_EFFECTS_VERSION', '0.5.0' );
 		}
 
 		// Plugin Folder Path.
@@ -169,8 +169,6 @@ final class Mai_Effects {
 		add_filter( 'mai_banner_args',                    array( $this, 'banner_args' ) );
 		add_filter( 'shortcode_atts_section',             array( $this, 'section_atts' ), 10, 3 );
 		add_filter( 'mai_section_args',                   array( $this, 'section_args' ), 20, 2 );
-		add_filter( 'genesis_markup_banner-area_content', array( $this, 'section_content' ), 10, 2 );
-		add_filter( 'genesis_markup_section_content',     array( $this, 'section_content' ), 10, 2 );
 	}
 
 	/**
@@ -356,46 +354,6 @@ final class Mai_Effects {
 			}
 		}
 		return $args;
-	}
-
-	/**
-	 * Add the new inline image as the first element of the section content.
-	 * This is the structure needed for parallax to work.
-	 *
-	 * @since   0.1.0
-	 *
-	 * @param   string  $content  The existing section content.
-	 * @param   array   $args     The section args.
-	 *
-	 * @return  string|HTML
-	 */
-	function section_content( $content, $args ) {
-		if ( ! isset( $args['params']['effects'] ) || 'parallax' !== $args['params']['effects'] ) {
-			return $content;
-		}
-		if ( ! isset( $args['params']['image'] ) || empty( $args['params']['image'] ) ) {
-			return $content;
-		}
-		$image_size = ( isset( $args['params']['image_size'] ) && ! empty( $args['params']['image_size'] ) ) ? $args['params']['image_size']: 'section';
-		// $image_data = wp_get_attachment_image_src( $args['params']['image'], $image_size );
-		// $image      = wp_get_attachment_image( $args['params']['image'], $image_size, false, array( 'class' => 'parallax-image', 'data-rellax-percentage' => '0.5' ) );
-		// $image      = wp_get_attachment_image( $args['params']['image'], $image_size, false, array( 'class' => 'parallax-image' ) );
-		$image      = wp_get_attachment_image( $args['params']['image'], $image_size, false,
-			array(
-				'class' => 'parallax-image',
-				// 'data-rellax-speed' => '-4',
-			)
-		);
-		// if ( $image_data ) {
-		if ( $image ) {
-			// <div class="parallax" style="background-image: url('images/sea.jpg');" parallax></div>
-			// $image   = sprintf( '<div class="parallax" style="background-image:url(%s);" parallax></div>', $image_data[0] );
-			// $image   = sprintf( '<div class="parallax-image" style="background-image:url(%s);"></div>', $image_data[0] );
-			// $image   = sprintf( '<div class="parallax__image" data-parallax-image="%s"></div>', $image_data[0] );
-			// $image   = sprintf( '<div class="parallax-wrap">%s</div>', $image );
-			$content = $image . $content;
-		}
-		return $content;
 	}
 
 	/**

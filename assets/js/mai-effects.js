@@ -14,7 +14,7 @@
 	$( '.section.parallax' ).each( function(e){
 
 		var $section = $(this);
-		var $image   = $section.find( '.parallax-image' );
+		var $image   = $section.find( '.section-bg' );
 
 		// Parallax.
 		var parallaxScene = new ScrollMagic.Scene({
@@ -23,8 +23,8 @@
 			duration: getDuration(),
 		})
 		.on( 'progress', function(e) {
-			// var distance = '-' + e.progress * 20 + '%';
-			var distance = e.progress * 30 + '%';
+			// Total of 30% movement, but -15% to +15%.
+			var distance = e.progress * 30 - 15 + '%';
 			// jQuery 1.8+ handles browser prefixes.
 			$image.css( 'transform', 'translateY(' + distance + ')' );
 		})

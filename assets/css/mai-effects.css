@@ -1,31 +1,10 @@
 /* Parallax */
-.section.parallax {
-	background-image: none !important;
-	position: relative;
-	overflow: hidden;
-}
-
-.section.parallax .parallax-image {
-	display: block;
-	min-width: 100%;
+.section.has-image-bg.parallax .section-bg {
 	height: 130%; /* 100% + transform percentage */
-	position: absolute;
-	top: -30%;
-	bottom: 0%;
-	right: 0;
-	left: 0;
-	margin: auto;
-	-o-object-fit: cover;
-	object-fit: cover; /* no IE, whatever. */
-	z-index: 0;
 	will-change: transform;
 	-webkit-transform: translateY( 0% );
 	-ms-transform: translateY( 0% );
 	transform: translateY( 0% );
-}
-
-.section.parallax .section-content {
-	z-index: 2;
 }
 
 /* Fade */
