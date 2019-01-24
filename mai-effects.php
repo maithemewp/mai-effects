@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Effects
  * Plugin URI:      https://maitheme.com
  * Description:     Add various section effects to add a little flair to your Mai Theme powered website.
- * Version:         0.6.0
+ * Version:         0.7.0
  *
  * Author:          MaiTheme.com
  * Author URI:      https://maitheme.com
@@ -90,7 +90,7 @@ final class Mai_Effects {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_EFFECTS_VERSION' ) ) {
-			define( 'MAI_EFFECTS_VERSION', '0.6.0' );
+			define( 'MAI_EFFECTS_VERSION', '0.7.0' );
 		}
 
 		// Plugin Folder Path.
@@ -156,20 +156,8 @@ final class Mai_Effects {
 		// Updater.
 		add_action( 'plugins_loaded', array( $this, 'updater' ) );
 
-		// Notice.
-		if ( ! ( is_plugin_active( 'mai-theme-engine/mai-theme-engine.php' ) // If not running Mai Theme.
-			|| defined( 'MAI_THEME_ENGINE_VERSION' ) // If version is not defined.
-			|| version_compare( MAI_THEME_ENGINE_VERSION, '1.8.0', '<' ) // If not running at least Mai Theme Engine 1.8+.
-			) ) {
-
-			add_action( 'admin_init', function() {
-				deactivate_plugins( plugin_basename( __FILE__ ) );
-			});
-			add_action( 'admin_notices', function() {
-				printf( '<div class="notice notice-warning"><p>%s</p></div>', __( 'Mai Effects requires Mai Theme Engine plugin v1.8.0 or higher. As a result, this plugin has been deactivated.', 'mai-effects' ) );
-			});
-			return;
-		}
+		// Maybe deactivate. Run after Mai Theme.
+		add_action( 'plugins_loaded', array( $this, 'maybe_deactivate' ), 20 );
 
 		// Hooks.
 		add_action( 'customize_register',                 array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
@@ -200,6 +188,40 @@ final class Mai_Effects {
 			return;
 		}
 		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-effects/', __FILE__, 'mai-effects' );
+	}
+
+	/**
+	 * Maybe deactivate the plugin if conditions aren't met.
+	 *
+	 * @since   0.7.0
+	 *
+	 * @return  void
+	 */
+	public function maybe_deactivate() {
+		// Bail if no Mai Theme.
+		if ( ! class_exists( 'Mai_Theme_Engine' ) ) {
+			return;
+		}
+		// Bail if version is not defined.
+		if ( ! defined( 'MAI_THEME_ENGINE_VERSION' ) ) {
+			return;
+		}
+		// Bail if running at least Mai Theme Engine 1.8.0.
+		if ( version_compare( MAI_THEME_ENGINE_VERSION, '1.8.0', '>=' ) ) {
+			return;
+		}
+		// Deactivate.
+		add_action( 'admin_init', function() {
+			deactivate_plugins( plugin_basename( __FILE__ ) );
+		});
+		// Notice.
+		add_action( 'admin_notices', function() {
+			printf( '<div class="notice notice-warning"><p>%s</p></div>', __( 'Mai Effects requires Mai Theme Engine plugin v1.8.0 or higher. As a result, Mai Effects has been deactivated.', 'mai-effects' ) );
+			// Remove "Plugin activated" notice.
+			if ( isset( $_GET['activate'] ) ) {
+				unset( $_GET['activate'] );
+			}
+		});
 	}
 
 	/**
