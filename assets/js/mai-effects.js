@@ -14,7 +14,7 @@
 	$( '.section.parallax' ).each( function(e){
 
 		var $section = $(this);
-		var $image   = $section.find( '.section-bg' );
+		var $image   = $section.find( '.bg-image' );
 
 		// Parallax.
 		var parallaxScene = new ScrollMagic.Scene({
@@ -24,7 +24,7 @@
 		})
 		.on( 'progress', function(e) {
 			// Total of 30% movement, but -15% to +15%.
-			var distance = e.progress * 30 - 15 + '%';
+			var distance = e.progress * 40 - 20 + '%';
 			// jQuery 1.8+ handles browser prefixes.
 			$image.css( 'transform', 'translateY(' + distance + ')' );
 		})
@@ -41,159 +41,20 @@
 		});
 	});
 
-	var fades = [];
+	// Fade Effects.
+	$( '.has-fadein, .has-fadeinup, .has-fadeindown, .has-fadeinleft, .has-fadeinright' ).each( function(e) {
 
-	// Fade In.
-	$( '.section.fadein' ).each( function(e){
+		var $element = $(this);
 
-		var $section = $(this);
-		var $content = $section.find( '.section-content' );
-
-		var fadeInScene = new ScrollMagic.Scene({
-			triggerElement: $section[0],
-			triggerHook: .8, // 20% up the page.
-			duration: '30%',
-		})
-		.on( 'progress', function(e) {
-			$content.css({
-				'opacity': e.progress,
-			});
+		var fadeScene = new ScrollMagic.Scene({
+			triggerElement: $element[0],
+			triggerHook: .9, // 10% up the page.
 		})
 		.on( 'enter', function(e) {
-			$content.addClass( 'enter' );
-		})
-		.on( 'end', function(e) {
-			$content.addClass( 'end' );
+			$element.addClass( 'doFade' );
 		})
 		// .addIndicators()
 		.addTo(controller);
-
-		// Add to our fades array.
-		fades.push(fadeInScene);
 	});
-
-	// Fade In Up.
-	$( '.section.fadeinup' ).each( function(e){
-
-		var $section = $(this);
-		var $content = $section.find( '.section-content' );
-
-		var fadeInUpScene = new ScrollMagic.Scene({
-			triggerElement: $section[0],
-			triggerHook: .8, // 20% up the page.
-			duration: '30%',
-		})
-		.on( 'progress', function(e) {
-			var transform = ( 48 - ( e.progress * 48 ) ) + 'px';
-			$content.css({
-				'opacity': e.progress,
-				'transform': 'translateY(' + transform + ')',
-			});
-		})
-		// .addIndicators()
-		.addTo(controller);
-
-		// Add to our fades array.
-		fades.push(fadeInUpScene);
-	});
-
-	// Fade In Down.
-	$( '.section.fadeindown' ).each( function(e){
-
-		var $section = $(this);
-		var $content = $section.find( '.section-content' );
-
-		var fadeInDownScene = new ScrollMagic.Scene({
-			triggerElement: $section[0],
-			triggerHook: .8, // 20% up the page.
-			duration: '30%',
-		})
-		.on( 'progress', function(e) {
-			var transform = ( 48 - ( e.progress * 48 ) ) + 'px';
-			$content.css({
-				'opacity': e.progress,
-				'transform': 'translateY(-' + transform + ')',
-			});
-		})
-		// .addIndicators()
-		.addTo(controller);
-
-		// Add to our fades array.
-		fades.push(fadeInDownScene);
-	});
-
-	// Fade In Left.
-	$( '.section.fadeinleft' ).each( function(e){
-
-		var $section = $(this);
-		var $content = $section.find( '.section-content' );
-
-		var fadeInLeftScene = new ScrollMagic.Scene({
-			triggerElement: $section[0],
-			triggerHook: .8, // 20% up the page.
-			duration: '30%',
-		})
-		.on( 'progress', function(e) {
-			var transform = ( 48 - ( e.progress * 48 ) ) + 'px';
-			$content.css({
-				'opacity': e.progress,
-				'transform': 'translateX(' + transform + ')',
-			});
-		})
-		// .addIndicators()
-		.addTo(controller);
-
-		// Add to our fades array.
-		fades.push(fadeInLeftScene);
-	});
-
-	// Fade In Right.
-	$( '.section.fadeinright' ).each( function(e){
-
-		var $section = $(this);
-		var $content = $section.find( '.section-content' );
-
-		var fadeInRightScene = new ScrollMagic.Scene({
-			triggerElement: $section[0],
-			triggerHook: .8, // 20% up the page.
-			duration: '30%',
-		})
-		.on( 'progress', function(e) {
-			var transform = ( 48 - ( e.progress * 48 ) ) + 'px';
-			$content.css({
-				'opacity': e.progress,
-				'transform': 'translateX(-' + transform + ')',
-			});
-		})
-		// .addIndicators()
-		.addTo(controller);
-
-		// Add to our fades array.
-		fades.push(fadeInRightScene);
-	});
-
-	// Loop through all of our fades.
-	for ( var i = 0; i < fades.length; i++ ) {
-		/**
-		 * Determine whether any of the fade sections are
-		 * more than 50% down the page (triggerHook is 20% and duration is 30%).
-		 * If so, remove the intial class which handles our keyframe fade.
-		 * This allows ScrollMagic to do the fade tied to scroll position.
-		 */
-		var $section     = $( fades[i].triggerElement() );
-		var windowHeight = $window.height();
-		var offset       = $section.offset().top;
-		var top          = offset - $(document).scrollTop();
-		var percent      = Math.floor( top / windowHeight * 100 );
-		var midFade      = ( percent >= 50 );
-
-		// Skip if not midFade.
-		if ( ! midFade ) {
-			continue;
-		}
-
-		// Remove the initial class.
-		$section.removeClass( 'initial' );
-	}
 
 })( document, jQuery );
