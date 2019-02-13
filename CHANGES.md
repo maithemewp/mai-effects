@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.0 (2/13/19)
+* Fixed: Smoother and more performant parallax.
+* Fixed: Fade effects now triggered and not tied to scroll movement.
 
 ## 0.7.0 (1/23/19)
 * Fixed: MTE checks.

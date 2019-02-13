@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Effects
  * Plugin URI:      https://maitheme.com
  * Description:     Add various section effects to add a little flair to your Mai Theme powered website.
- * Version:         0.7.0
+ * Version:         0.8.0
  *
  * Author:          MaiTheme.com
  * Author URI:      https://maitheme.com
@@ -90,7 +90,7 @@ final class Mai_Effects {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_EFFECTS_VERSION' ) ) {
-			define( 'MAI_EFFECTS_VERSION', '0.7.0' );
+			define( 'MAI_EFFECTS_VERSION', '0.8.0' );
 		}
 
 		// Plugin Folder Path.
@@ -154,7 +154,7 @@ final class Mai_Effects {
 	public function run() {
 
 		// Updater.
-		add_action( 'plugins_loaded', array( $this, 'updater' ) );
+		add_action( 'admin_init', array( $this, 'updater' ) );
 
 		// Maybe deactivate. Run after Mai Theme.
 		add_action( 'plugins_loaded', array( $this, 'maybe_deactivate' ), 20 );
@@ -166,9 +166,10 @@ final class Mai_Effects {
 		add_action( 'wp_enqueue_scripts',                 array( $this, 'inline_style' ), 1000 ); // Way late cause Engine changes stylesheet to 999.
 		add_filter( 'genesis_theme_settings_defaults',    array( $this, 'genesis_defaults' ) );
 		add_filter( 'mai_valid_section_args',             array( $this, 'validate_args' ) );
-		add_filter( 'mai_banner_args',                    array( $this, 'banner_args' ) );
 		add_filter( 'shortcode_atts_section',             array( $this, 'section_atts' ), 10, 3 );
+		add_filter( 'mai_banner_args',                    array( $this, 'banner_args' ) );
 		add_filter( 'mai_section_args',                   array( $this, 'section_args' ), 20, 2 );
+		add_filter( 'genesis_attr_section-content',       array( $this, 'add_section_content_classes' ), 10, 3 );
 	}
 
 	/**
@@ -181,9 +182,6 @@ final class Mai_Effects {
 	 * @return  void
 	 */
 	public function updater() {
-		if ( ! is_admin() ) {
-			return;
-		}
 		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
 			return;
 		}
@@ -349,8 +347,6 @@ final class Mai_Effects {
 		}
 		if ( $content_effect ) {
 			$has_effects = true;
-			$args['class'] = mai_add_classes( sanitize_html_class( $content_effect ), $args['class'] );
-			$args['class'] = mai_add_classes( 'initial', $args['class'] );
 		}
 		if ( $has_effects ) {
 			if ( ! $enqueued ) {
@@ -359,6 +355,25 @@ final class Mai_Effects {
 			}
 		}
 		return $args;
+	}
+
+	/**
+	 * Add fade classes to section content.
+	 *
+	 * @since   0.8.0
+	 *
+	 * @param   array   $attributes  The existing attributes.
+	 * @param   string  $context     The genesis_attr context.
+	 * @param   string  $args        The section args passed to genesis_attr function.
+	 *
+	 * @return  array   The modified attributes.
+	 */
+	function add_section_content_classes( $attributes, $context, $args ) {
+		if ( ! isset( $args['content_effects'] ) || empty( $args['content_effects'] ) ) {
+			return $attributes;
+		}
+		$attributes['class'] .= ' has-' . sanitize_html_class( $args['content_effects'] );
+		return $attributes;
 	}
 
 	/**
@@ -394,7 +409,7 @@ final class Mai_Effects {
 			'type'     => 'select',
 			'priority' => 8,
 			'choices'  => array(
-				''         => __( '- None -', 'genesis' ),
+				''         => __( 'None', 'mai-theme-engine' ),
 				'parallax' => __( 'Parallax', 'mai-theme-engine' ),
 			),
 		) );
@@ -414,7 +429,7 @@ final class Mai_Effects {
 			'type'     => 'select',
 			'priority' => 8,
 			'choices'  => array(
-				''            => __( '- None -', 'genesis' ),
+				''            => __( 'None', 'mai-theme-engine' ),
 				'fadein'      => __( 'Fade In', 'mai-theme-engine' ),
 				'fadeinup'    => __( 'Fade In/Up', 'mai-theme-engine' ),
 				'fadeindown'  => __( 'Fade In/Down', 'mai-theme-engine' ),
@@ -448,7 +463,7 @@ final class Mai_Effects {
 			'type'              => 'select',
 			'select_all_button' => false,
 			'options'           => array(
-				''         => __( '- None -', 'genesis' ),
+				''         => __( 'None', 'mai-theme-engine' ),
 				'parallax' => __( 'Parallax', 'mai-theme-engine' ),
 			),
 		), 4 );
@@ -460,7 +475,7 @@ final class Mai_Effects {
 			'type'              => 'select',
 			'select_all_button' => false,
 			'options'           => array(
-				''            => __( '- None -', 'genesis' ),
+				''            => __( 'None', 'mai-theme-engine' ),
 				'fadein'      => __( 'Fade In', 'mai-theme-engine' ),
 				'fadeinup'    => __( 'Fade In/Up', 'mai-theme-engine' ),
 				'fadeindown'  => __( 'Fade In/Down', 'mai-theme-engine' ),
