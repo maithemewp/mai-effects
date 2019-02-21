@@ -197,15 +197,15 @@ final class Mai_Effects {
 	 */
 	public function maybe_deactivate() {
 		// Bail if no Mai Theme.
-		if ( ! class_exists( 'Mai_Theme_Engine' ) ) {
+		if ( class_exists( 'Mai_Theme_Engine' ) ) {
 			return;
 		}
 		// Bail if version is not defined.
-		if ( ! defined( 'MAI_THEME_ENGINE_VERSION' ) ) {
+		if ( defined( 'MAI_THEME_ENGINE_VERSION' ) ) {
 			return;
 		}
 		// Bail if running at least Mai Theme Engine 1.8.0.
-		if ( version_compare( MAI_THEME_ENGINE_VERSION, '1.8.0', '>=' ) ) {
+		if ( version_compare( MAI_THEME_ENGINE_VERSION, '1.8.0', '<=' ) ) {
 			return;
 		}
 		// Deactivate.
@@ -232,7 +232,8 @@ final class Mai_Effects {
 	 */
 	function register_scripts() {
 		$suffix = maieffects_get_suffix();
-		wp_register_script( 'mai-effects', MAI_EFFECTS_PLUGIN_URL . "assets/js/mai-effects{$suffix}.js", array(), MAI_EFFECTS_VERSION, true );
+		wp_register_script( 'basic-scroll', MAI_EFFECTS_PLUGIN_URL . "assets/js/basic-scroll{$suffix}.js", array(), '3.0.1', true );
+		wp_register_script( 'mai-effects', MAI_EFFECTS_PLUGIN_URL . "assets/js/mai-effects{$suffix}.js", array( 'basic-scroll' ), MAI_EFFECTS_VERSION, true );
 	}
 
 	/**

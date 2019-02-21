@@ -1,60 +1,49 @@
-( function( document, $, undefined ) {
+// Parallax.
+document.querySelectorAll( '.parallax > .bg-image' ).forEach( function(element) {
 
-	// Bail if ScrollMagic isn't loaded somehow.
-	if ( 'function' !== typeof ScrollMagic ) {
-		return;
-	}
+	var parallaxScroll = basicScroll.create({
+		elem: element,
+		from: 'top-bottom',
+		to: 'bottom-top',
+		direct: true,
+		props: {
+			'--translateY': {
+				from: '-20%',
+				to: '20%',
+			}
+		},
+	})
+	.start();
 
-	var $window = $(window);
+});
 
-	// Setup ScrollMagic Controller.
-	var controller = new ScrollMagic.Controller();
+// Fades.
+document.querySelectorAll( '.has-fadein, .has-fadeinup, .has-fadeindown, .has-fadeinleft, .has-fadeinright' ).forEach( function(element) {
 
-	// Parallax.
-	$( '.section.parallax' ).each( function(e){
+	var fadeClassAdded = false;
 
-		var $section = $(this);
-		var $image   = $section.find( '.bg-image' );
-
-		// Parallax.
-		var parallaxScene = new ScrollMagic.Scene({
-			triggerElement: $section[0],
-			triggerHook: 'onEnter',
-			duration: getDuration(),
-		})
-		.on( 'progress', function(e) {
-			// Total of 30% movement, but -15% to +15%.
-			var distance = e.progress * 40 - 20 + '%';
-			// jQuery 1.8+ handles browser prefixes.
-			$image.css( 'transform', 'translateY(' + distance + ')' );
-		})
-		// .addIndicators()
-		.addTo(controller);
-
-		// Get the duration. Full window height plus the section height.
-		function getDuration() {
-			return $window.height() + $section.height();
+	var fadeScroll = basicScroll.create({
+		elem: element,
+		from: 'top-bottom',
+		to: 'bottom-top',
+		direct: true,
+		inside: (instance, percentage, props) => {
+			if ( ( percentage > 0 ) && ! fadeClassAdded ) {
+				element.classList.add( 'doFade' );
+				fadeClassAdded = true;
+			} else if ( ( percentage <= 0 ) && fadeClassAdded ) {
+				element.classList.remove( 'doFade' );
+				fadeClassAdded = false;
+			}
+		},
+		outside: (instance, percentage, props) => {
+			// Fade in if loading the page after it's already scrolled past.
+			if ( ( percentage >= 100 ) && ! fadeClassAdded ) {
+				element.classList.add( 'doFade' );
+				fadeClassAdded = true;
+			}
 		}
-		// Update duration if browser on resize or similar shift.
-		parallaxScene.on( 'shift', function(e) {
-			parallaxScene.duration( getDuration() );
-		});
-	});
+	})
+	.start();
 
-	// Fade Effects.
-	$( '.has-fadein, .has-fadeinup, .has-fadeindown, .has-fadeinleft, .has-fadeinright' ).each( function(e) {
-
-		var $element = $(this);
-
-		var fadeScene = new ScrollMagic.Scene({
-			triggerElement: $element[0],
-			triggerHook: .9, // 10% up the page.
-		})
-		.on( 'enter', function(e) {
-			$element.addClass( 'doFade' );
-		})
-		// .addIndicators()
-		.addTo(controller);
-	});
-
-})( document, jQuery );
+});
