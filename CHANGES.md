@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.7.0 (2/13/19)
+## 0.9.0 (TBD)
+* Official release.
+
+## 0.8.0 (2/13/19)
 * Fixed: Smoother and more performant parallax.
 * Fixed: Fade effects now triggered and not tied to scroll movement.
 
