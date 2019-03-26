@@ -1,11 +1,18 @@
 // Parallax.
-document.querySelectorAll( '.parallax > .bg-image' ).forEach( function(element) {
+document.querySelectorAll( '.parallax' ).forEach( function(element) {
+
+	var image = element.querySelector( '.bg-image' );
+
+	// Skip if no image.
+	if ( ! image ) {
+		return;
+	}
 
 	var parallaxScroll = basicScroll.create({
 		elem: element,
 		from: 'top-bottom',
 		to: 'bottom-top',
-		direct: true,
+		direct: image,
 		props: {
 			'--translateY': {
 				from: '-20%',
