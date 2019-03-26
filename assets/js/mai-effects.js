@@ -32,16 +32,17 @@ document.querySelectorAll( '.has-fadein, .has-fadeinup, .has-fadeindown, .has-fa
 	var fadeScroll = basicScroll.create({
 		elem: element,
 		from: 'top-bottom',
-		to: 'bottom-top',
+		to: 'top-top',
 		direct: true,
 		inside: (instance, percentage, props) => {
-			if ( ( percentage > 0 ) && ! fadeClassAdded ) {
-				element.classList.add( 'doFade' );
-				fadeClassAdded = true;
-			} else if ( ( percentage <= 0 ) && fadeClassAdded ) {
-				element.classList.remove( 'doFade' );
-				fadeClassAdded = false;
+			if ( fadeClassAdded ) {
+				return;
 			}
+			if ( percentage <= 5 ) {
+				return;
+			}
+			element.classList.add( 'doFade' );
+			fadeClassAdded = true;
 		},
 		outside: (instance, percentage, props) => {
 			// Fade in if loading the page after it's already scrolled past.
