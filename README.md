@@ -1,2 +1,2 @@
 # Mai Effects
-Add various section effects to add a little flair to your Mai Theme powered website.
+Add a little flair to your Mai Theme powered website.

@@ -3,8 +3,8 @@
 /**
  * Plugin Name:     Mai Effects
  * Plugin URI:      https://maitheme.com
- * Description:     Add various section effects to add a little flair to your Mai Theme powered website.
- * Version:         0.8.0
+ * Description:     Add a little flair to your Mai Theme powered website.
+ * Version:         0.9.0
  *
  * Author:          MaiTheme.com
  * Author URI:      https://maitheme.com
@@ -90,7 +90,7 @@ final class Mai_Effects {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_EFFECTS_VERSION' ) ) {
-			define( 'MAI_EFFECTS_VERSION', '0.8.0' );
+			define( 'MAI_EFFECTS_VERSION', '0.9.0' );
 		}
 
 		// Plugin Folder Path.
@@ -204,8 +204,8 @@ final class Mai_Effects {
 		if ( defined( 'MAI_THEME_ENGINE_VERSION' ) ) {
 			return;
 		}
-		// Bail if running at least Mai Theme Engine 1.8.0.
-		if ( version_compare( MAI_THEME_ENGINE_VERSION, '1.8.0', '<=' ) ) {
+		// Bail if running at least Mai Theme Engine 1.9.0.
+		if ( version_compare( MAI_THEME_ENGINE_VERSION, '1.9.0', '<=' ) ) {
 			return;
 		}
 		// Deactivate.
