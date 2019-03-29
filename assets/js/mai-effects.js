@@ -38,7 +38,7 @@ document.querySelectorAll( '.has-fadein, .has-fadeinup, .has-fadeindown, .has-fa
 			if ( fadeClassAdded ) {
 				return;
 			}
-			if ( percentage <= 5 ) {
+			if ( percentage <= 20 ) {
 				return;
 			}
 			element.classList.add( 'doFade' );

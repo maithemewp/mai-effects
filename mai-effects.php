@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Effects
  * Plugin URI:      https://maitheme.com
  * Description:     Add a little flair to your Mai Theme powered website.
- * Version:         0.9.1
+ * Version:         0.9.2
  *
  * Author:          MaiTheme.com
  * Author URI:      https://maitheme.com
@@ -90,7 +90,7 @@ final class Mai_Effects {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_EFFECTS_VERSION' ) ) {
-			define( 'MAI_EFFECTS_VERSION', '0.9.1' );
+			define( 'MAI_EFFECTS_VERSION', '0.9.2' );
 		}
 
 		// Plugin Folder Path.

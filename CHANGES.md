@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.0 (TBD)
+## 1.0.0 (TBD)
 * Official release.
 
 ## 0.8.0 (2/13/19)
