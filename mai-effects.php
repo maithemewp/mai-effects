@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Effects
  * Plugin URI:      https://maitheme.com
  * Description:     Add a little flair to your Mai Theme powered website.
- * Version:         0.9.3
+ * Version:         1.0.0
  *
  * Author:          MaiTheme.com
  * Author URI:      https://maitheme.com
@@ -90,7 +90,7 @@ final class Mai_Effects {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_EFFECTS_VERSION' ) ) {
-			define( 'MAI_EFFECTS_VERSION', '0.9.3' );
+			define( 'MAI_EFFECTS_VERSION', '1.0.0' );
 		}
 
 		// Plugin Folder Path.
@@ -160,16 +160,16 @@ final class Mai_Effects {
 		add_action( 'plugins_loaded', array( $this, 'maybe_deactivate' ), 20 );
 
 		// Hooks.
-		add_action( 'customize_register',                 array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
-		add_action( 'cmb2_admin_init',                    array( $this, 'metabox_settings' ), 14 ); // Mai Theme settings are registered on default/10.
-		add_action( 'wp_enqueue_scripts',                 array( $this, 'register_scripts' ) );
-		add_action( 'wp_enqueue_scripts',                 array( $this, 'inline_style' ), 1000 ); // Way late cause Engine changes stylesheet to 999.
-		add_filter( 'genesis_theme_settings_defaults',    array( $this, 'genesis_defaults' ) );
-		add_filter( 'mai_valid_section_args',             array( $this, 'validate_args' ) );
-		add_filter( 'shortcode_atts_section',             array( $this, 'section_atts' ), 10, 3 );
-		add_filter( 'mai_banner_args',                    array( $this, 'banner_args' ) );
-		add_filter( 'mai_section_args',                   array( $this, 'section_args' ), 20, 2 );
-		add_filter( 'genesis_attr_section-content',       array( $this, 'add_section_content_classes' ), 10, 3 );
+		add_action( 'customize_register',              array( $this, 'customizer_settings' ), 24 ); // Mai Theme settings are registered on 20.
+		add_action( 'cmb2_admin_init',                 array( $this, 'metabox_settings' ), 14 ); // Mai Theme settings are registered on default/10.
+		add_action( 'wp_enqueue_scripts',              array( $this, 'register_scripts' ) );
+		add_action( 'wp_enqueue_scripts',              array( $this, 'inline_style' ), 1000 ); // Way late cause Engine changes stylesheet to 999.
+		add_filter( 'genesis_theme_settings_defaults', array( $this, 'genesis_defaults' ) );
+		add_filter( 'mai_valid_section_args',          array( $this, 'validate_args' ) );
+		add_filter( 'shortcode_atts_section',          array( $this, 'section_atts' ), 10, 3 );
+		add_filter( 'mai_banner_args',                 array( $this, 'banner_args' ) );
+		add_filter( 'mai_section_args',                array( $this, 'section_args' ), 20, 2 );
+		add_filter( 'genesis_attr_section-content',    array( $this, 'add_section_content_classes' ), 10, 3 );
 	}
 
 	/**
