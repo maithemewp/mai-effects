@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Effects
  * Plugin URI:      https://maitheme.com
  * Description:     Add a little flair to your Mai Theme powered website.
- * Version:         1.0.0
+ * Version:         1.1.0
  *
  * Author:          MaiTheme.com
  * Author URI:      https://maitheme.com
@@ -90,7 +90,7 @@ final class Mai_Effects {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_EFFECTS_VERSION' ) ) {
-			define( 'MAI_EFFECTS_VERSION', '1.0.0' );
+			define( 'MAI_EFFECTS_VERSION', '1.1.0' );
 		}
 
 		// Plugin Folder Path.
@@ -182,10 +182,22 @@ final class Mai_Effects {
 	 * @return  void
 	 */
 	public function updater() {
+		// Bail if current user cannot manage plugins.
+		if ( ! current_user_can( 'install_plugins' ) ) {
+			return;
+		}
+
+		// Bail if plugin updater is not loaded.
 		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
 			return;
 		}
+
 		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-effects/', __FILE__, 'mai-effects' );
+
+		// Maybe set github api token.
+		if ( defined( 'MAI_GITHUB_API_TOKEN' ) ) {
+			$updater->setAuthentication( MAI_GITHUB_API_TOKEN );
+		}
 	}
 
 	/**
@@ -196,18 +208,27 @@ final class Mai_Effects {
 	 * @return  void
 	 */
 	public function maybe_deactivate() {
-		// Bail if no Mai Theme.
-		if ( class_exists( 'Mai_Theme_Engine' ) ) {
+		$deactivate = false;
+
+		// If no Mai Theme v1.
+		if ( ! class_exists( 'Mai_Theme_Engine' ) ) {
+			$deactivate = true;
+		}
+
+		// If no version.
+		if ( ! defined( 'MAI_THEME_ENGINE_VERSION' ) ) {
+			$deactivate = true;
+		}
+
+		// If not running at least Mai Theme Engine 1.9.0.
+		if ( defined( 'MAI_THEME_ENGINE_VERSION' ) && version_compare( MAI_THEME_ENGINE_VERSION, '1.9.0', '<=' ) ) {
+			$deactivate = true;
+		}
+
+		if ( ! $deactivate ) {
 			return;
 		}
-		// Bail if version is not defined.
-		if ( defined( 'MAI_THEME_ENGINE_VERSION' ) ) {
-			return;
-		}
-		// Bail if running at least Mai Theme Engine 1.9.0.
-		if ( version_compare( MAI_THEME_ENGINE_VERSION, '1.9.0', '<=' ) ) {
-			return;
-		}
+
 		// Deactivate.
 		add_action( 'admin_init', function() {
 			deactivate_plugins( plugin_basename( __FILE__ ) );
